@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * User: DSS
@@ -22,6 +23,18 @@ public class TestTCP {
         ClientThread client = new ClientThread();
         new Thread(client).start();
     }
+
+    @Test
+    public void test() {
+        try {
+            // 得到是本机IP，并非172.0.0.1
+            InetAddress localHost = InetAddress.getLocalHost();
+            System.out.println("localHost = " + localHost);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      *  客户端
