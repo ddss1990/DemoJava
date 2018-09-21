@@ -101,3 +101,31 @@ SELECT employee_id FROM employees WHERE last_name = 'k_ing';
 SELECT last_name, salary FROM employees WHERE manager_id = ANY(SELECT employee_id FROM employees WHERE last_name = 'k_ing');
 # 7. 工资最高的员工姓名
 SELECT CONCAT(last_name, '.', first_name) 'name', salary FROM employees WHERE salary = (SELECT MAX(salary) FROM employees);
+
+# 经典案例
+# 1. 平均工资最低的部门信息
+SELECT AVG(salary), department_id FROM employees GROUP BY department_id ORDER BY AVG(salary);
+SELECT department_id FROM employees GROUP BY department_id ORDER BY AVG(salary) LIMIT 1;
+SELECT * FROM departments WHERE department_id = (SELECT department_id FROM employees GROUP BY department_id ORDER BY AVG(salary) LIMIT 1);
+# 2. 平均工资最低的部门信息和部门工资
+SELECT av.s, d.* FROM departments d JOIN (SELECT department_id, AVG(salary) s FROM employees GROUP BY department_id ORDER BY AVG(salary) LIMIT 1) av ON d.`department_id` = av.department_id;
+# 3. 平均工资最高的job信息
+SELECT AVG(salary), job_id FROM employees GROUP BY job_id ORDER BY AVG(salary) DESC LIMIT 1;
+SELECT * FROM jobs WHERE job_id = (SELECT job_id FROM employees GROUP BY job_id ORDER BY AVG(salary) DESC LIMIT 1);
+# 4. 平均工资高于公司平均工资的部门
+SELECT AVG(salary) FROM employees;
+SELECT AVG(salary), department_id FROM employees GROUP BY department_id HAVING AVG(salary) > (SELECT AVG(salary) FROM employees);
+SELECT * FROM departments WHERE department_id IN (SELECT department_id FROM employees GROUP BY department_id HAVING AVG(salary) > (SELECT AVG(salary) FROM employees));
+# 5. 所有manager的详细信息
+SELECT DISTINCT manager_id FROM employees WHERE manager_id IS NOT NULL;
+SELECT * FROM employees WHERE employee_id = ANY(SELECT DISTINCT manager_id FROM employees WHERE manager_id IS NOT NULL);
+# 6. 各个部门中，最高工资中最低的那个部门的最低工资是多少
+SELECT MAX(salary), department_id FROM employees GROUP BY department_id ORDER BY MAX(salary);
+SELECT department_id FROM employees GROUP BY department_id ORDER BY MAX(salary) LIMIT 1;
+SELECT MIN(salary) FROM employees WHERE department_id = (SELECT department_id FROM employees GROUP BY department_id ORDER BY MAX(salary) LIMIT 1);
+# 7. 平均工资最高的部门的manager的详细信息
+SELECT AVG(salary), department_id FROM employees GROUP BY department_id ORDER BY AVG(salary) DESC;
+SELECT AVG(salary), department_id FROM employees GROUP BY department_id ORDER BY AVG(salary) DESC LIMIT 1;
+
+SELECT last_name, d.department_id, email, salary FROM employees e JOIN departments d ON d.`manager_id` = e.`employee_id` 
+	WHERE d.`department_id` = (SELECT department_id FROM employees GROUP BY department_id ORDER BY AVG(salary) DESC LIMIT 1);
