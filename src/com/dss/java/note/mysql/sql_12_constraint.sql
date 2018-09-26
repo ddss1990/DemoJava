@@ -82,6 +82,33 @@ ALTER TABLE stuinfo MODIFY COLUMN age INT;
 ALTER TABLE stuinfo DROP PRIMARY KEY;
 
 
+CREATE DATABASE students;
+SHOW DATABASES;
+USE students;
+SHOW TABLES;
+DROP TABLE major;
+CREATE TABLE IF NOT EXISTS major(id INT PRIMARY KEY, majorName VARCHAR(10));
+CREATE TABLE IF NOT EXISTS stuinfo(id INT PRIMARY KEY, NAME VARCHAR(20), majorId INT);
+# 添加外键 - 传统方式
+ALTER TABLE stuinfo ADD CONSTRAINT fk_stu_major FOREIGN KEY(majorId) REFERENCES major(id);
+SHOW INDEX FROM major;
+SHOW INDEX FROM stuinfo;
+INSERT INTO major VALUES(1, 'Java'), (2, 'Android'), (3, 'PHP');
+INSERT INTO stuinfo VALUES(1, 'Tom1', 1),(2, 'Tom2', 2), (3, 'Tom3', 2),(4, 'Tom4', 1),(5, 'Tom5', 3),(6, 'Tom6', 3);
+SELECT * FROM major;
+INSERT INTO major VALUES(3, 'PHP');
+DELETE FROM major WHERE id=3; # 这个时候不能删
+ALTER TABLE stuinfo DROP FOREIGN KEY fk_stu_major; # 删除外键
 
+SELECT NAME, majorName FROM stuinfo s JOIN major m ON s.`majorId` = m.id;
+
+# 级联删除 - 添加外键的时候多加一个 on delete cascade 
+ALTER TABLE stuinfo ADD CONSTRAINT fk_stu_major FOREIGN KEY(majorId) REFERENCES major(id) ON DELETE CASCADE;
+DELETE FROM major WHERE id=3; # 这个时候就能删了，相关联的从表中引用的整条数据也会删除
+SELECT * FROM stuinfo;
+# 级联置空
+ALTER TABLE stuinfo ADD CONSTRAINT fk_stu_major FOREIGN KEY(majorId) REFERENCES major(id) ON DELETE SET NULL;
+DELETE FROM major WHERE id=2; # 这个时候删除，会将从表中对应的数据置空
+SELECT * FROM stuinfo; 
 
 

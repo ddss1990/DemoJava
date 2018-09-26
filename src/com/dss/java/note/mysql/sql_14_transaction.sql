@@ -51,6 +51,9 @@
     回滚点 - 只搭配rollback使用
       savepoint NAME; 设置保存点
       rollback to NAME; 回滚到保存点
+  delete和truncate在事务中的区别
+    truncate是实际的删除，不支持回滚
+    delete支持回滚
 */
 START TRANSACTION;
 SHOW ENGINES;
@@ -67,6 +70,7 @@ SELECT @@tx_isolation;
 # 1. 设置隔离级别
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 # set names gbk; # 在cmd中中文出现乱码，更改字符集显示
+
 
 
 
