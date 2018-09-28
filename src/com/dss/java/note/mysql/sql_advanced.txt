@@ -1,0 +1,82 @@
+高级MySql
+1 架构介绍
+  1.1 Linux下安装
+    Community Server  GA版
+    1.1.1 检查是否有安装过
+        rpm -qa | grep -i mysql
+            如果安装过，会显示 MySQL-XXXXXXX
+    1.1.2 安装服务端
+        rpm -ivh MySQL-server-xxxxxx.rpm
+           i - install
+           v - verbose
+        装完之后，有用户root，但没密码，需要手动设置
+        mysqladmin -u root password 'new-password'
+        mysqladmin -u root -h cloud password 'new-password'
+    1.1.3 安装客户端
+        rpm -ivh MySQL-client-xxxxxx.rpm
+    1.1.4 验证是否安装成功
+        ps -ef | grep mysql   # 这中的 datadir 字段指向的目录是存放数据库的目录
+    1.1.5 启动MySQL
+        service start mysql
+        systemctl start mysql
+        chkconfig mysql on # 设置开机自启动   
+        chkconfig --list | grep mysql 
+        ntsysv # 查看有哪些软件自启动，可修改
+    1.1.6 root帐号
+        mysqladmin -u root password '123'  # 设置密码
+    1.1.7 配置文件
+        路径  /usr/share/mysql
+        my-huge.cnf   ->   /etc/my.cnf
+            client
+                default-character-set=utf8   # add  默认的字符集
+            mysqld
+                sort_buffer_size=2M         # 排序的默认缓冲池大小
+                character_set_server=utf8
+                character_set_client=utf8
+                collation-server=utf8_general_ci
+            mysql  
+                default-character-set=utf8
+            修改字符集前建的库在字符集修改之后字符集不会发生变化。修改之后建的库编码才有效。
+        log-bin     # 二进制日志，用于主从复制
+        log-error   # 错误日志，默认关闭，记录服务器的启动和错误日志
+        log         # 查询日志，默认关闭
+        数据库/frm文件   # 存放表结构
+        数据库/myd文件   # 存放表数据
+        数据库/myi文件   # 存放表索引
+    1.1.8 逻辑架构
+        插件式的存储引擎架构将查询处理和其它系统任务以及数据的存储提取相分离。
+        连接层
+        服务层 ： 核心服务功能。服务器会解析查询并创建相应的内部解析树，并对其完成相应的优化，最后生成相应的执行操作。
+        引擎层 ： 存储引擎真正的负责了MySQL中的数据的存储和提取。
+        存储层
+    1.1.9 存储引擎
+                MyISAM          InnoDB
+        外键    不支持           支持
+        事务    不支持           支持
+        行表锁  表锁，即使操作一条记录，也会锁住整个表，不适合高并发操作
+                                 行锁，只锁住一行，对其它行无影响，适合高并发操作
+        缓存    不缓存真实数据   缓存真实数据
+        表空间  小               大
+        关注点  性能             事务
+    在centos7上，mysql变成了mariadb，安装变成 yum -y install mariadb* , 设置管理员密码 mysql_secure_installation ,  设置开机自启动 systemctl enable mariadb
+2 索引优化
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
