@@ -60,6 +60,159 @@
         关注点  性能             事务
     在centos7上，mysql变成了mariadb，安装变成 yum -y install mariadb* , 设置管理员密码 mysql_secure_installation ,  设置开机自启动 systemctl enable mariadb
 2 索引优化
+    先复现，
+    2.0 索引
+        未建索引前查询速度较慢，因为是杂乱无序的；创建索引后，会对其进行排序，提升查询速度。
+        为频繁使用的字段创建索引，有助于提升查询速率。
+        单值索引  -  
+            create index 索引名 on 表名(列名);    索引名命名规范: idx_表名_列名
+        复合索引  -  
+            create index 索引名 on 表名(列1,列2);    索引名命名规范: idx_表名_列1列2    
+    2.1 性能下降
+        现象 - 执行时间长，等待时间长
+        原因 - 查询语句写的不好；索引失效；关联查询太多(设计缺陷或不得已的需求)；服务器调优及各参数的配置(缓冲、线程数等)
+           索引失效 - 创建了索引没用上
+    2.2 通用的Join查询
+        2.2.1 SQL顺序
+            select distinct * from 表 join 表 on 连接条件 where 查询条件 group by 分组条件 having 筛选条件 order by 排序 limit 分页
+        2.2.2 机器执行顺序
+            from -> on -> join -> where -> group by -> having -> select -> distinct -> order by -> limit
+        2.2.3 多种join
+            内连接 - inner join
+            外连接 - 左外(left join), 右外(right join)，全外(full outer join) // MySql不支持全外，可用 union 来实现功能
+    2.3 索引 - Index
+        2.3.1 索引是什么                                         BTree
+            帮助MySql高效获取数据的数据结构。 本质 - 索引是数据结构。
+            排好序的快速查找数据结构。
+                在数据之外，数据库系统还维护着满足特定查找算法的数据结构，这些数据结构以某种方式引用(指向)数据，这样就可以在这些数据结构上实现高级查找算法。
+            会影响到排序和查找。
+            查找快，更新慢
+                更新 - 不只是更新数据，也会更新对应的索引。
+            索引本身也很大，不能全部存储在内存中，因此索引往往以索引文件的形式存储在磁盘上。
+            索引一般指的是B树(BTree，多路搜索树，不一定是二叉的)结构组织的索引。
+                聚集索引，次要索引，覆盖索引，复合索引，前缀索引，唯一索引默认都是使用B+树索引，统称索引。还有其它索引如哈希索引等。
+        2.3.2 优势劣势
+            优势 - 提高数据检索效率，降低数据库的IO成本；对数据列进行排序，降低数据排序的成本，降低CPU的消耗
+            劣势 - 索引也是一张表，保存了主键与索引字段，并指向实体表的记录，因此索引列也要占用空间；提高了查询速度，但是降低了更改速度；需要人为的研究设计索引。
+        2.3.3 创建索引 
+           单值索引 - 一个索引只包含单个列，一个表可以有多个单列索引。建议最多不超过5个索引。
+           唯一索引 - 索引列的值必须唯一，但允许有空值。
+           复合索引 - 一个索引包含多个列
+           创建索引
+               create [unique] index NAME on 表名(列名);
+               alter 表名 add [unique] index [NAME] on 列名;
+           删除索引
+               drop index NAME on 表名;
+           查看索引
+               show index from 表名;
+           索引名命名规范: idx_表名_列1列2    
+           四种方式添加数据表的索引
+               alter table 表名 add primary key 列名;       # 添加一个主键，意味着索引值必须是唯一的，并且不能为空
+               alter table 表名 add unique 索引名 列名;     # 创建索引的值必须是唯一的(除了NULL，因为可能有多个)
+               alter table 表名 add index 索引名 列名;      # 添加普通索引，索引值可出现多次
+               alter table 表名 add fulltext 索引名 列名;   # 全文索引 
+        2.3.4 索引结构
+            BTree索引
+            Hash索引
+            full-text索引
+            R-tree索引
+            BTree 检索原理  - 有点类似于二分查找，二叉树
+                段  区  块
+              每个磁盘块包含几个数据项和指针                                                                    l1           A
+              叶子节点 - 存储真实的数据                                                                         l2       B        C
+              非叶子节点 - 不存真实的数据，只存指引搜索方向的数据项，这些数据项并不真正的存在于数据表中         l3     D   E     F  G
+              
+              三层的B+树可表示上百万的数据，如果上百万的数据查找只需要3次IO，性能的提升是巨大的。如果没有索引，就会每次查询都会执行一次IO，是非常慢的。
+        2.3.5 创建索引
+            适合创建
+                主键自动建立唯一索引
+                频繁作为查询条件的字段应创建索引
+                查询中与其它表关联的字段，外键关系建立索引
+                频繁更新的字段不适合创建索引
+                where字段里用不到的字段不创建索引
+                高并发下倾向创建组合索引
+                插叙中排序的字段，排序字段若通过索引去访问将大大提高排序速度
+                  创建索引的时候也要考虑是否有排序需求
+                查询中统计或者分组字段
+            不适合创建
+                表记录太少
+                经常增删改的表
+                数据重复且分布均匀的表字段，应该只为最经常查询或经常排序的数据列建立索引。某个数据列包含许多重复的内容，为其建立索引没有太大的实际效果。例如一个班里学生的国籍都一样。
+                  索引的选择性是指索引列中不同值的数目与表中记录数的比，这个值越接近于1，索引的效率越高。也就是作为索引的列如果每个值都不一样，效率是最高的。
+    2.4 性能分析
+        2.4.1 MySql Query Optimizer - MySql自带的查询优化器
+            负责优化SELECT语句的优化器模块 - 通过计算分析系统中收到的统计信息，为客户端请求的Query提供他认为最优的执行计划。但是MySql认为最优的并不一定是DBA认为最优的。
+        2.4.2 MySql常见瓶颈
+            CPU - CPU的饱和一般发生在数据装入内存或从磁盘中读取数据的时候
+            IO - 频繁IO导致装入数据远大于内存容量的时候
+            服务器的性能瓶颈 - 配置不够
+        2.4.3 Explain
+          作用
+            explain 可以模拟优化器执行SQL查询语句，从而知道MySql是如何处理你的SQL语句的。分析查询语句或表结构是否存在性能瓶颈。
+          能干嘛
+            表的读取顺序 - 通过id的值来确定
+            数据读取操作的操作类型 - select_type
+            哪些索引可以使用 - possible_keys
+            哪些索引被实际使用 - key
+            表之间的引用
+            每张表有多少行被优化器查询 - rows
+          使用
+            explain sql语句;    # 执行计划包含的信息
+              表头  id   select_type   table   type   possible_keys   key   key_len   ref   rows   Extra
+                    
+                    id - select查询的序列号，包含一组数字，表示查询中执行select子句或操作表的顺序。  只有多个表的情况下，id的值才为多个
+                         id相同 - 执行顺序由上至下
+                         id不同 - 如果是子查询，id的序号会递增，id值越大优先级越高，越先被执行。
+                         id相同又不同 - id值的先执行，值相同的顺序执行
+                    select_type
+                        SIMPLE - 简单的select查询，不包含子查询或UNION
+                        PRIMARY - 查询中若包含任何复杂的子部分，最外层查询标记为PRIMARY
+                        SUBQUERY - 在select或where列表中包含的子查询
+                        DERIVED - 在from列表中的子查询被标记为DERIVED，MySql递归执行这些子查询，把结果放在临时表里
+                        UNION - 若第二个select出现在UNION之后，就被标记为UNION
+                        UNION RESULT - 从UNION表获取结果的select，union合并的结果集
+                    table - 这一行的数据是来自于哪个表的
+                    type - 访问类型
+                        system > const > eq_ref > ref > range > index > ALL    查询要达到range级别，最好是ref
+                        system - 表只有一条记录(等于系统表)
+                        const - 表示通过索引一次就找到了，const用于比较 primary key 和 unique 索引。如将主键置于where列表中 where id = 4
+                        eq_ref - 唯一性索引扫描，对于每个索引键，表中只有一条记录与之匹配。
+                        ref - 非唯一性索引扫描，返回匹配某个单独值的所有行。  通过创建一个多列索引，查询的时候只使用多列中的某一列进行查询。
+                        range - 只检索给定范围的行，使用一个索引来选择行。
+                        index - Full Index scan. 只遍历索引树，比ALL快，因为索引文件比数据文件下。index是从索引中读取的，ALL是从磁盘中读取的。
+                        ALL - Full Table Scan. 
+                    possible_keys - 本条SQL语句可能用到的索引，但不一定被查询实际使用。
+                    key - 实际用到的索引。 若使用了覆盖索引，则该索引仅出现在key列表中。 
+                    key_len - 表示索引中使用的字节数，可通过该列计算查询中使用的索引的长度。越短越好(在保证精度的前提下)
+                              最大可能长度，并非实际长度。根据表定义而得到的。
+                    ref - 显示索引的哪一列被使用了，可能的话是一个常数。哪些列或常量被用于查找索引列上的值。
+                    rows - 根据表统计信息及索引使用情况，大致估算出找到所需记录所需要读取的行数。
+                    Extra - 拓展，包含不适合在其它列中显示但十分重要的额外信息
+                        Using filesort - 文件内排序 
+                                          如使用了3列作为索引，但查询语句使用的时候，只用到了两列 where l1 = 1 sort by l3 这个时候会出现 Using filesort 会影响到性能
+                                          正确写法 where l1 = 1 sort by l2, l3
+                        Using temporary - 使用了临时表保存中间结果，MySql在对查询结果排序的时候使用临时表，常见于 order by 和 group by 
+                                          如 where l1 in () group by l2
+                                          正确写法  where l1 in () group by l1, l2
+                          严重程度 Using temporary > Using filesort  如果出现这俩，一定要解决
+                          如果建立索引， sort by 和 group by 一定要按照索引个数和顺序来写
+                        Using index - 表示使用了覆盖索引，避免访问了表的数据行，效率不错
+                                      同时出现 Using where 表明 索引被用来执行索引键值的查找
+                                      没有出现 Using where 表明 索引被用来读取数据而非执行查找动作
+                            覆盖索引 - select 的数据列只用从索引中就能读取到，不必读取数据行。查询的列要被所建的索引覆盖
+                                       索引 idx_tab_l1L2L3   ->   select l1, l2, l3 from tab 
+                        Using where - 使用了where过滤
+                        Using join buffer - 使用了连接缓存
+                        impossible value - where子句的值总是false，无法获取数据
+                        select tables optimized away - 在没有 group by 的情况下，对索引进行了优化
+                        distinct - 优化distinct操作，在找到第一匹配的元组后即停止找同样的值的动作
+                    id, type, key, rows, Extra 比较重要
+3 索引优化
+3.1 索引分析
+    
+3.2 索引失效
+3.3 一般性建议
+          
 
 
 
@@ -70,8 +223,24 @@
 
 
 
-
-
+PS.
+  笛卡尔积
+  查看当前使用的数据库
+    select database();
+    show tables;  // 显示在第一行  Tables_in_XXX
+    status;       // current database
+  查看表结构
+    desc TableName;
+    show create table TableName;   // 查看创建表的语句
+  字符集
+    ALTER DATABASE books CHARACTER SET gbk;     // 修改库的字符集
+    set names gbk;              // 修改CMD中的字符集显示
+  复制数据表
+    只复制表结构
+      create table 新表 select * from 旧表 where 1=2;
+      create table 新表 like 旧表;
+    复制表结构及数据
+      create table 新表 select * from 旧表; 
 
 
 

@@ -14,5 +14,7 @@ SELECT SUBSTR(last_name, 1, 2) FROM employees;
 
 # 12 联合查询
 # 将多个查询条件拆分为多个多个语句
+# union 合并并去重
+# union all 合并不去重
 # select * from 表 where 语句1 or 语句2  ->
 # select * from 表 where 语句1 union select * from 表 where 语句2  
