@@ -101,6 +101,7 @@
            创建索引
                create [unique] index NAME on 表名(列名);
                alter 表名 add [unique] index [NAME] on 列名;
+                 列名顺序是默认的检索顺序。
            删除索引
                drop index NAME on 表名;
            查看索引
@@ -152,7 +153,7 @@
           能干嘛
             表的读取顺序 - 通过id的值来确定
             数据读取操作的操作类型 - select_type
-            哪些索引可以使用 - possible_keys
+            哪些索引可能使用 - possible_keys
             哪些索引被实际使用 - key
             表之间的引用
             每张表有多少行被优化器查询 - rows
@@ -189,13 +190,13 @@
                     rows - 根据表统计信息及索引使用情况，大致估算出找到所需记录所需要读取的行数。
                     Extra - 拓展，包含不适合在其它列中显示但十分重要的额外信息
                         Using filesort - 文件内排序 
-                                          如使用了3列作为索引，但查询语句使用的时候，只用到了两列 where l1 = 1 sort by l3 这个时候会出现 Using filesort 会影响到性能
-                                          正确写法 where l1 = 1 sort by l2, l3
+                                          如使用了3列作为索引，但查询语句使用的时候，只用到了两列 where l1 = 1 order by l3 这个时候会出现 Using filesort 会影响到性能
+                                          正确写法 where l1 = 1 order by l2, l3
                         Using temporary - 使用了临时表保存中间结果，MySql在对查询结果排序的时候使用临时表，常见于 order by 和 group by 
                                           如 where l1 in () group by l2
                                           正确写法  where l1 in () group by l1, l2
                           严重程度 Using temporary > Using filesort  如果出现这俩，一定要解决
-                          如果建立索引， sort by 和 group by 一定要按照索引个数和顺序来写
+                          如果建立索引， order by 和 group by 一定要按照索引个数和顺序来写
                         Using index - 表示使用了覆盖索引，避免访问了表的数据行，效率不错
                                       同时出现 Using where 表明 索引被用来执行索引键值的查找
                                       没有出现 Using where 表明 索引被用来读取数据而非执行查找动作
@@ -207,11 +208,64 @@
                         select tables optimized away - 在没有 group by 的情况下，对索引进行了优化
                         distinct - 优化distinct操作，在找到第一匹配的元组后即停止找同样的值的动作
                     id, type, key, rows, Extra 比较重要
-3 索引优化
-3.1 索引分析
-    
-3.2 索引失效
-3.3 一般性建议
+        2.5 索引优化
+          2.5.1 索引分析
+            双表查询 - 有主外键的时候，索引加在
+              左连接加在从表(右边)上的效果大于加在主表(左边)上的效果， 右链接的索引加在左边的表上。
+              如果已经给定了索引是加在某个表上，这个时候可以通过交换主从表的位置来使效果最佳。
+            三表 
+              索引加在经常查询的字段上，也可以理解为连接字段上
+              
+            尽可能减少join语句中的NestedLoop的循环总次数，永远用小结果集驱动大的结果集。
+            优先优化NestedLoop的内层循环。
+            保证Join语句中被驱动表上Join条件字段已经被索引。
+            当无法保证被驱动表的Join条件字段被索引且内存资源充足的前提下，不要吝啬JoinBuffer的设置。
+          2.5.2 索引失效
+            a. 全值匹配我最爱 - 
+            b. 最佳左前缀原则 - 查询从索引的最左前列开始并且不跳过索引中的列 (带头大哥不能死，中间兄弟不能丢)
+            c. 不在索引列上做任何操作(计算、函数、(自动或手动)类型转换)，会导致索引失效而转向全表扫描  (索引列上少计算)
+            d. 存储引擎不能使用索引中范围条件右边的列 (范围之后全失效) 如： where l1 = 3 and l2 > 2 and l3 = 4; -> 这种情况下只用到了l1,l2两个列，第三个列l3没用到
+            e. 尽量使用覆盖引擎(只访问索引的查询(索引列和查询列一致))，减少 select * ()
+            f. MySql在使用不等于(!= 或 <>)时，无法使用索引会导致全表扫描 ()
+            g. is null, is not null 也无法使用索引 ()
+            h. like以通配符开头('%abc')MySql索引失效会变成全表扫描 ()
+                使用覆盖索引来解决一定要使用通配符开头的情况   select l1, l2, l3 from tab where l1 like '%abc%'
+            i. 字符串不加单引号，索引失效 ()
+            j. 少用or，用or连接会索引失效 ()
+                    全值匹配我最爱，最左前缀要遵守。
+                    带头大哥不能死，中间兄弟不能丢。
+                    索引列上少计算，范围之后全失效。
+                    LIKE百分写最右，覆盖索引不写星。
+            
+          案例
+            索引 idx_tab_l1L2L3L4 tab(l1, l2, l3, l4)
+            key_len情况:   1 -31,  2 - 62,   3 - 93,  4 - 124
+            where 后的条件                                   分析情况
+              l1 = 1 and l2 = 2 and l3 = 3 and l4 = 4          使用到了索引，4列都有使用到  
+              l1 = 1 and l2 = 2 and l4 = 4 and l3 = 3          使用到了索引，4列都有使用到
+              l4 = 4 and l4 = 3 and l2 = 2 and l1 = 1          使用到了索引，4列都有使用到
+                     上面这3种分析情况一样，是因为Mysql Query Optimizer 做了自动优化 
+              l1 = 1 and l2 = 2 and l3 > 3 and l4 = 4          使用到了索引，使用了3列  -  范围之后全失效
+              l1 = 1 and l2 = 2 and l4 > 4 and l3 =3           使用到了索引，4列都有使用到
+              l1 = 1 and l2 = 2 and l4 = 4 order by l3         使用到了索引，使用了3列，l1,l2 用于查找，l3 用于排序
+              l1 = 1 and l2 = 2 order by l3                    使用到了索引，使用了3列，l1,l2 用于查找，l3 用于排序，和l4关系不大
+              l1 = 1 and l2 = 2 order by l4                    使用到了索引，l1, l2 用于查找，出现了 Using filesort
+              l1 = 1 and l5 = 5 order by l2, l3                使用到了索引，l1 用于查找，没有出现 Using filesort
+              l1 = 1 and l5 = 5 order by l3, l2                使用到了索引，l1 用于查找，出现了 Using filesort
+              l1 = 1 and l2 = 2 order by l2, l3                使用到了索引，l1 用于查找，l2,l3用于排序，无 Using filesort
+              l1 = 1 and l2 = 2 order by l3, l2                使用到了索引，l1,l2 用于查找，出现了 Using filesort
+              l1 = 1 and l2 = 2 and l5 = 5 order by l3, l2     使用到了索引，l1,l2 用于查找，没有出现 Using filesort 这是因为l2此时已经是个定值，排序没有意义
+              l1 = 1 and l4 = 4 group by l2, l3                使用到了索引，l1 用于查找
+              l1 = 1 and l4 = 4 group by l3, l2                使用到了索引，l1 用于查找，出现了 Using temporary 和 Using filesort
+              l1 = 1 and l2 like '2%' and l3 =3                使用到了索引，使用了3列
+              l1 = 1 and l2 like '%2' and l3 =3                使用到了索引，只有1列l1
+              l1 = 1 and l2 like '2%22%' and l3 =3             使用到了索引，使用了3列
+            group by 基本上都需要进行排序，会有临时表产生(Using temporary)
+          2.5.3 一般性建议
+            单键索引，尽量选择针对当前Query过滤性更好的索引
+            选择组合索引的时候，当前Query中过滤性最好的字段在索引字段顺序中，位置越靠前约好
+            选择组合索引的时候，尽量选择可以能包含当前Query中的where字句中更多字段的索引
+            尽可能通过分析统计信息和调整Query的写法来达到选择合适索引的目的
           
 
 
