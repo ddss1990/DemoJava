@@ -266,7 +266,112 @@
             选择组合索引的时候，当前Query中过滤性最好的字段在索引字段顺序中，位置越靠前约好
             选择组合索引的时候，尽量选择可以能包含当前Query中的where字句中更多字段的索引
             尽可能通过分析统计信息和调整Query的写法来达到选择合适索引的目的
+3 查询截取分析
+      慢查询的开启并捕获
+      explain+慢SQL分析
+      Show Profile 查询SQL在MySql服务器里执行的细节和生命周期情况
+      SQL数据库服务器的参数调优
+    3.1 查询优化
+        永远小表驱动大表 - 类似于嵌套for循环，外层的循环次数要小于内层的循环次数
+            select * from A where id in (select id from B)   等价于
+                for select id from B                         # 先循环B
+                for select * from A where A.id = B.id        # 后循环A
+            select * from A where exists(select 1 from B where B.id = A.id)    等价于
+                for select * from A                          # 先循环A
+                for select * from B where B.id = A.id        # 后循环B
+            当A表的数据集小于B表的数据集时，用 exists 优于 in
+            exists   -   select ... from tab where exists(subQuery)
+                将主查询的数据，放到子查询中做条件验证，根据验证结果(TURE 或 FALSE)来决定主查询的数据结果是否得以保留
+              exists(subQuery)只返回TRUE或FALSE，因此子查询中的 select * 可以是任意语句，官方说法是 在实际的执行过程中，会忽略select清单，因此没有区别
+              exists子查询的实际执行过程可能经过了优化而不是理解上的逐条对比，如果担忧效率问题，可进行实际检验以确定是否有效率问题
+              exists子查询往往也可以用条件表达式，其它子查询或者JOIN来替代，何种最优需具体问题具体分析
+        order by 关键字优化
+            尽量使用Index方式排序，避免使用FileSort方式排序  -  Using index 而不要 Using FileSort
+              使用Index方式排序的情况    Using Index 的效率高于 Using FileSort
+                 order by 语句使用索引最左前列
+                 使用where子句与order by子句条件组合满足索引最左前列
+            尽可能在索引列上完成排序操作，遵照索引列的最佳左前缀
+            如果不在索引列上，FileSort有两种算法：单路排序和双路排序
+                双路排序 - MySql4.1之前使用双路排序，扫描两次磁盘，最终得到数据，从磁盘去排序字段，在buffer进行排序，再从磁盘去其他字段
+                单路拍讯 - MySql4.1之后使用单路排序，从磁盘读取所需要的列，按照 order by 列在 buffer 内对其进行排序，然后扫描排序后的列表进行输出
+                结论
+                    单路是后出的，总体而言好过双路
+                    单路是讲所有数据读取到sort_buffer中，如果字段过多，可能读取的数据超出了容量。这样就会导致每次只取出sort-buffer大小的容量，进行排序，排完再取sort_buffer大小的容量，从而造成了多次IO。
+            优化策略
+                增大 sort_buffer_size 参数的设置
+                增大 max_length_for_sort_data 参数的设置
+            提高 sort by 速度
+                不要使用 select *
+                增大 sort_buffer_size
+                增大 max_length_for_sort_data
+            总结
+                为排序使用索引
+                    MySql两种排序方式：文件排序(Using FileSort) 扫描有序索引排序(Using Index)
+                    MySql能为排序与查询使用相同的索引
+                    多个排序的情况下，必须顺序一致(同升同降)才不会出现 Using FileSort，如果出现不同顺序，就会出现Using FileSort
+        group by 关键字优化
+            group by 实质是先排序后分组，遵照索引键的最佳左前缀原则
+            无法使用索引列，增大 sort_buffer_size 和 max_length_for_sort_data 的值
+            where 高于 having ，能在where里搞定的就不要在having里
+    3.2 慢查询日志
+        配置文件中开启慢查询，关键字
+            slow_query_log=1;
+            slow_query_log_file=/var/lib/mysql/slow.log;
+            long_query_time=3;  - 3S
+            log_output=FILE
+        一种日志记录，用来记录在MySql中响应时间(long_query_time，默认是5s)超过阀值(不包括等于)的语句，会被记录到慢查询日志中。
+        默认情况下，MySql数据库没有开启慢查询日志，需要手动设置。只有在调优状态下，才建议启动该参数。开启慢查询会影响性能
+        show variables like '%slow_query_log%'    -   查看是否开启慢查询
+        set global.slow_query_log=1;              -   开启慢查询，只对当前数据库生效，重启MySql失效。如果想永久生效，修改配置文件中的值(slow_query_log, slow_query_log_file)
+        set global.long_query_time=3;             -   设置阀值，需要重新连接或新开一个会话才能看到修改的值 
+        select sleep(N);                          -   睡眠一段时间，模拟慢查询
+        show global status like '%Slow_queries%'  -   查询当前系统有多少条慢查询记录
+        mysqldumpslow  -  日志分析工具
+            -s  表示按照何种方式排序  
+            -c  访问次数        -al  平均锁定时间
+            -l  锁定时间        -ar  平均返回记录数
+            -r  返回记录        -at  平均查询时间
+            -t  查询时间        -t   返回前面多少条的数据
+            -g  后边搭配一个正则匹配模式，大小写不敏感
+          mysqldumpslow -s -r -t 10 /var/lib/mysql/slow.log         得到返回记录集最多的10个SQL
+          mysqldumpslow -s -c -t 10 /var/lib/mysql/slow.log         得到返回次数最多的10个SQL
+          mysqldumpslow -s t -t 10 -g 'left join' /var/lib/mysql/slow.log     得到按照时间排序的前10条里面含有左连接的查询语句
+    3.3 批量数据脚本
+        使用过程来实现
+        创建函数，如果报错'This function has none of DETERMINISTIC......'
+          原因 - 开启过慢查询日志
+          解决办法 - 重启MySql失效，可去配置文件中永久修改
+            show variables like 'log_bin_trust_function_creators';
+            set global log_bin_trust_function_creators=1;
+        例子1
+          创建函数 - 随机字符串
+            create function rand_string(n int) returns varchar(255)
+            begin
+                declare chars_str varchar(100) default 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                declare return_str varchar(255) default '';
+                declare i int default 0;
+                while i < n do 
+                set return_str = concat(return_str, substring(chars_str, floor(1 + rand()*52), 1);
+                set i = i + 1;
+                end while;
+            end $
+          创建过程
+            create procedure insert_emp(in start int(10), in max_num(10))
+            begin
+                declare i int default 0;
+                set autocommit = 0;  # 关闭自动提交
+                repeat 
+                set i = i + 1;
+                inset into emp () .....
+                until i = max_num;
+                end repeat;
+                commit;
+            end $
+          delimiter ;
+          call insert_emp();
           
+    3.4 Show Profile
+    3.5 全局查询日志
 
 
 
@@ -295,6 +400,7 @@ PS.
       create table 新表 like 旧表;
     复制表结构及数据
       create table 新表 select * from 旧表; 
+  exists 与 in 
 
 
 
