@@ -33,6 +33,7 @@ SELECT YEAR(NOW()) AS 'year', MONTH(NOW()) 'month', DAY(NOW()) 'day', HOUR(NOW()
 SELECT MONTHNAME(CURDATE()), DAYNAME(CURDATE()) ;
 
 # 6.5 str_to_date 将指定字符串按指定格式转成日期格式
+# date_formate 将日期格式按指定格式转成字符串
 /*
  %Y - 4位制的年份     	%y - 2位制的年份
  %m - 月份，补0(01, 02)	  %c - 月份，不补0
@@ -43,3 +44,16 @@ SELECT MONTHNAME(CURDATE()), DAYNAME(CURDATE()) ;
 SELECT STR_TO_DATE('12-03-1923', '%d-%m-%Y');
 # example - 查询入职日期为 1992-4-3的员工信息
 SELECT * FROM employees WHERE hiredate = STR_TO_DATE('4-3 1992', '%c-%d %Y');
+# 6.6 to_days函数 - 将日期转换成天数
+select TO_DAYS(NOW());
+# 6.7 others
+/* 
+ dayofweek('')   -  返回是一周的第几天，1-日，2-一，3-二，4-三，5-四，6-五，7-六
+ weekday('')     -  返回日期的星期索引，0-一，1-二，2-三，3-四，4-五，5-六，6-日
+ dayofmonth('')  -  返回日期是月份中的哪一天，1~31
+ dayofyear('')   -  日期在当年中的日数
+ dayname('')     -  日期的星期名字
+ monthname('')   -  日期的月份名字
+ quarter('')     -  日期是哪一季度，1~4
+ last_day('')    -  日期当月的最后一天
+*/

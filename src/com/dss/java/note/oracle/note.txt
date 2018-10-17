@@ -1,0 +1,144 @@
+1 Oracle的安装和配置
+    数据库名 - orcl(默认)，设置密码，此密码对应的用户名是system
+    关系型数据库
+    网络上的数据库 - 在网络上供多用户连接数据库
+    由 Oracle数据库 和 Oracle实例 构成
+        Oracle数据库
+        Oracle实例    -  来管理Oracle数据库，一个实例只能与一个数据库关联，一个数据库可由多个实例连接
+    将SCOTT用户取消锁定，设置密码，用于后续的操作
+    需要开启的服务
+        OracleServiceORCL
+        OracleOraDB_TNSListener
+    
+    客户端
+      安装类型 - 管理员
+      配置
+        服务名 - orcl
+        网络协议 - TCP
+        主机名 - IP地址，端口号 - 1521(default)
+      使用
+        SQL Plus
+        select sysdate from dual;   # 返回当前系统的系统时间
+2 数据库管理
+    PLSQL-Developer
+      Command Window
+        @PATH;  # 导入SQL语句    顺序  del_data  ->  hr_cre  ->  hr_popul
+            导入的SQL语句，创建的表只在当前用户下存在，如果想要其它用户能访问，需要在其它用户的对象中为指定的表添加要操作的权限
+    Enterprise Manager Console  -  企业管理器
+      安全性
+        用户 - 提供的默认用户，可新建用户
+            系统 - CREATE ANY TABLE  # 建表权限
+            对象 - 管理表的操作权限
+            限额 - 开辟表空间，用于存储表
+            角色 - 对系统和对象的权限的封装，这里面是已配置好的一些操作权限，例如 DBA。配置了角色后，需要重新连接才能生效.
+        角色 - 所有的对系统和对象的权限的封装的角色
+        概要文件 - 设置一些基本属性，例如多次输入密码错误，锁定帐号
+3 SQL
+    基础
+        Orcale严格区分大小写，MySQL不区分
+        注释    --
+        连接符  ||
+        别名用双引号表示
+    单行函数
+      字符控制函数
+        lower('')      -    转小写
+        upper('')      -    转大写
+        initcap('')    -    首字母大写，其余小写
+        concat(), substr(), length(), instr('', '')
+        lpad(p1,p2,p3) -    长度为p2，不够的用p3左补全，rpad() - 右补全
+        trim(a from s) -    去掉首尾两端的指定字符
+        replace()      -    替换所有的指定字符
+      数字函数
+        round(a, b)    -    四舍五入，b代表精度，小数点后b位；如果是负数，代表是小数点钱b位
+        trunc(a, b)    -    截断，b代表位数，如果是负数，就变为0
+        mod(a, b)      -    取余
+      日期函数
+        sysdate        -    当前日期
+        months_between -    两个日期相差的月份数
+        add_months()   -    日期加上指定月
+        next_day()     -    指定日期的下一个星期几对应的日期
+        last_day()     -    本月的最后一天
+      转换函数
+        yyyy - 年  mm - 月  dd - 天
+        to_char()      -    转成字符型
+        to_date()      -    转成日期型
+        to_char(1234, '$999,999.99')   -   转成指定格式的字符，后边代表3位作为一个整体，如果9换成0，如果前边的数不够3位，用0来补
+                                           $ - 美元    L - 本地货币符号    . - 小数点    , - 千位符
+        to_number      -    字符转成数字
+      通用函数 - 适用于任何数据类型，包括空值
+        nvl(1, 2)      -    将空值转成一个已知的值
+        nvl(1, 2, 3)   -    1不为空，返回2；为空，返回3
+        nullif(1, 2)   -    相等返回null，不等返回1
+        coalesce()     -    如果第一个参数为空，返回第二个；如果第二个为空，返回第三个；依次类推
+      条件表达式
+        case
+            case 变量 when 条件1 then 返回1
+              when 条件2 then 返回2
+              else 默认值
+            end
+        decode
+            decode(变量, 条件1, 值1, 条件2, 值2, ... , 默认值)
+    多表查询
+      SQL92
+        内连接
+          等值连接，非等值连接
+        外连接
+          左外连接  select * from A a, B b where a.XXX = b.XXX(+);
+          右外连接  select * from A a, B b where a.XXX(+) = b.XXX;
+      SQL99
+        natural join     -    两个表连接，并将两个表中所有列名相同的列进行连接
+        A join B using(列)    -    用指定的列进行连接，前提是两个表中的列名一致
+        A a join B b on a.XXX = b.XXX;
+        左外连接    left outer join
+        右外连接    right outer join
+        满外连接    full outer join
+    分组函数
+      组函数
+        avg, count, max, min, sum
+        stddev      -     标准偏差，用作聚集和分组函数
+    子查询
+      单行子查询
+      多行子查询
+    创建和管理表
+      select * from user_tables;        # 查看用户创建的表
+      create table NAME()               # 建表
+      create table NAME as select XXXX; # 建表
+      alter table TABLE
+              add ()                    # 增加列
+              modify ()                 # 修改列，改的是数据类型。有数据的列不能修改，需要先置空才行
+              drop column NAME          # 删除列
+              rename column NAME TO NAME # 重命名列
+      drop table NAME;                  # 删除表
+      truncate table NAME;              # 清空表数据，不支持回滚
+      delete from NAME;                 # 清空数据，支持回滚
+      rename NAME to NAME;              # 改名
+      insert into () values()           # 插入数据
+      insert into () select from XXX    # 插入数据
+      update NAME set XXX               # 修改数据
+      delete from NAME where XXX        # 删除数据
+      事务
+        savepoint NAME;                 # 创建回滚点
+        rollback to savepoint NAME;     # 回滚到指定点
+        其它用户不能看到当前用户所做的改变，直到当前用户结束事务。
+        DML语句所涉及到的行被锁定，其它用户不能操作。
+        锁释放后，其它用户才能进行操作。
+    约束
+        [constraint NAME] 
+            not null       # 非空
+            unique         # 唯一，空值不算唯一
+            primary key    # 主键   
+          NAME - 表名_列名_概述，见名知意
+      或 表级约束
+        constraint NAME 约束(列)
+              
+      
+            
+            
+            
+            
+            
+            
+            
+    
+    
+    

@@ -495,7 +495,7 @@
 
 
 
-PS.
+Base
   笛卡尔积
   查看当前使用的数据库
     select database();
@@ -512,8 +512,44 @@ PS.
       create table 新表 select * from 旧表 where 1=2;
       create table 新表 like 旧表;
     复制表结构及数据
-      create table 新表 select * from 旧表; 
-  exists 与 in 
+      create table 新表 select * from 旧表;
+  数据库，表，流程控制，函数，视图
+                查看已存的                  查看创建的语句 
+    数据库     show databases               show create database NAME;
+    表         show tables;                 show create table NAME;
+    流程控制   show procedure status;       show create procedure NAME;
+    函数       show function status;        show create function NAME;
+    视图       show table status where comment='view'    show create view NAME;
+    索引       show index from NAME;
+  数据类型
+    整型            字节
+        Tinyint      1    -128~127/0~255
+        Smallint     2    -32768~32767/0~65535
+        Mediumint    3    很大
+        Int/Integer  4    很大
+        Bigint       8    很大
+    小数
+      浮点数
+        float        4     
+        double       8
+      定点数
+        DEC(M,D)      M - 
+        DECIMAL(M,D)  D - 
+    位类型
+        Bit(M)
+    字符类型        最长
+        char        0~255
+        varchar     0~65535
+    日期类型
+        date        4       日期，无时间
+        datetime    8       日期，有时间
+        timestamp   4
+        time        3       时间
+        year        1       年
+      datetiem 与 timestamp
+        TimeStamp的范围小，为 19700101080001 - 2038年的某个时间；DateTime的取值范围大，为 1000-1-1 ~ 9999-12-31
+        TimeStamp与实际时区有关，更能反映实际的日期；而Datetime只能反映插入时的当地时区的日期
+        TimeStamp受Mysql版本和SQLMode影响较大
 
 
 
