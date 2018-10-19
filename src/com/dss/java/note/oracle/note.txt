@@ -39,6 +39,7 @@
         注释    --
         连接符  ||
         别名用双引号表示
+        char - 定长字符串    varchar2 - 可变字符串
     单行函数
       字符控制函数
         lower('')      -    转小写
@@ -101,7 +102,7 @@
       多行子查询
     创建和管理表
       select * from user_tables;        # 查看用户创建的表
-      create table NAME()               # 建表
+      create table NAME();              # 建表
       create table NAME as select XXXX; # 建表
       alter table TABLE
               add ()                    # 增加列
@@ -126,18 +127,202 @@
         [constraint NAME] 
             not null       # 非空
             unique         # 唯一，空值不算唯一
-            primary key    # 主键   
+            primary key    # 主键，非空且唯一
+            check          # 检查，后边直接跟条件 check(条件)
+            default        # 默认
           NAME - 表名_列名_概述，见名知意
       或 表级约束
         constraint NAME 约束(列)
-              
-      
+              constraint NAME foreign key(列) references TAB(列)[XXX];   # 外键比较特殊，只能用表级约束，且多个 references 字段
+                 XXX - on delete cascade   级联删除，父表中的列删除时，子表中相应的整条数据也被删除
+                       on delete set null  级联置空，父表中的列删除时，字表中相应的列置空
+      修改约束   -   只能添加或删除约束，不能修改
+        alter table NAME 
+                modify(列 类型 约束)             # 添加一个约束；如果不加约束的话，是否能删除约束，待验证
+                add constraint 约束名 约束(列)   # 添加一个约束
+                drop constraint 约束名           # 删除一个约束
+                disable constraint 约束名        # 无效化一个约束
+                enable constraint 约束名         # 使约束有效，前提是表内的数据不冲突
+                drop primary key;                # 删除主键约束，待验证
+      查询表中定义的约束
+        select constraint_name, constraint_type, search_condition from user_constraints where table_name='表名';
+      查询约束定义的列
+        select constraint_name, column_name from user_cons_columns where table_name='表名';
+    视图  -  一个虚表，对应的原表叫基表。
+        修改视图，原表的数据会随之改变
+        create view NAME as select XXX;          # 创建一个视图
+        create or replace view NAME as select XXX;  # 修改一个视图
+        [with read only]                         # 只读
+            create [or replace] view NAME as select XXX with read only;
+        drop view NAME;                          # 删除一个视图
+        简单视图 - 一个表，没有函数，没有分组，可以DML操作
+        复杂视图 - 多个表，有函数，有分组，有时可以DML操作
+        TOP - N 分析  -  查询一个列中最大或最小的N个值
+            伪列 - 类似于Excel中的行号，在Orcale中的字段是 rownum
+            rownum 只能使用 < 或 <= ;不能使用 =, >, >=,不然返回的数据为空
+              如果想要使其能使用>等操作，需要先将rownum变为真实的列，需要用到子查询
+                  select rn from (select rownum rn, XXX from TABLE where XXX) where rn>10 and rn<=20;
+    其它数据库对象
+        序列  Sequences  供多个用户来产生唯一数值的数据库对象
+              主要用于提供主键值
+              序列值存入内存可以提高访问效率
+            create sequence NAME                 # 创建一个序列
+                   [increment by n]              # 每次增长的数值
+                   [start with n]                # 从哪个值开始
+                   [maxvalue n]                  # 最大值
+                   [minvalue n]                  # 最小值
+                   [cycle/nocycle]               # 是否需要循环
+                   [cache n / nocache]           # 是否缓存登录
+            select NAME.currval from dual;       # 查看当前值
+            select NAME.nextval from dual;       # 查看下一个值
+            alter sequence NAME XXX;             # 修改一个序列，初始值的修改只能通过删除再创建的方式才能修改
+            裂缝出现的情况  -  出现了断值
+                回滚
+                系统异常
+                多个表同时使用同一序列
+            select sequence_name, min_value, max_value, increment_by, last_number from user_sequences;
+                                                 # 查询现有的序列，如果指定NOCACHE, last_number 显示序列中下一个有效的值
+            drop sequence NAME                   # 删除一个序列
+        索引
+            索引被损坏，不影响表，只会影响查询的速度
+            通过指针加速Orcale服务器的查询速度，减少磁盘IO
+            自动创建
+                primary key, unique约束，会自动在相应的列上创建唯一的索引
+            手动创建
+                create index NAME on 表(列)       # 创建索引
+    控制用户权限
+        数据库安全性
+            系统安全性
+            数据安全性
+        系统权限 - 对于数据库的权限
+        对象权限 - 操作数据库对象的权限 
+      命令行操作
+        create user NAME identified by PWD;       # 创建一个用户
+        grant privilege to user                   # 赋予权限
+            privilege : 
+                create session                    # 创建会话
+                create table                      # 创建表
+                create sequence                   # 创建序列
+                create view                       # 创建视图
+                create procedure                  # 创建过程
+        alter user NAME quota unlimited on TAB;   # 创建用户表空间，只有拥有表空间的情况下，表才能创建成功
+        alter user NAME quota SIZE on TAB;        # 创建用户表空间，给点限额大小
+        alter user NAME identified by PWD;        # 改密码
+        create role NAME;                         # 创建一个角色
+        grant privilege to NAME;                  # 将权限赋予给角色，可以是多个权限并列
+        grant NAME1 to NAME2;                     # 将角色赋予给用户，NAME1 - 角色名  NAME2 - 用户名
+      对象 - 指的是表，视图，索引这些东西
+        不同的对象具有不同的对象权限
+        对象的拥有者拥有所有的权限
+        对象的拥有者可以向外分配权限
+        grant [select/update/...] on TAB to USER; # 为对象分配权限，也可以指定列，用 表名.列名
+        grant [select/...] on TAB to USER with grant option;
+                                                  # 使用户同样具有分配权限的权利
+        grant [select/...] on TAB to public;      # 将表的权限给所有用户
+        revoke privilege on TAB from USER         # 收回对象权限
+        select * from                             # 查询权限分配情况
+                ROLS_SYS_PRIVS          # 角色拥有的系统权限
+                ROLS_TAB_PRIVS          # 角色拥有的对象权限
+                USER_ROLS_PRIVS         # 用户拥有的角色
+                USER_TAB_PRIVS_MADE     # 用户分配的关于表对象的权限
+                USER_TAB_PRIVS_RECD     # 用户拥有的关于表对象权限
+                USER_COL_PRIVS_MADE     # 用户分配的关于列对象的权限
+                USER_COL_PRIVS_RECD     # 用户拥有的关于列对象的权限
+                USER_SYS_PRIVS          # 用户拥有的系统权限
+      总结
+        create user     # 创建用户
+        grant           # 分配权限
+        create role     # 创建角色
+        alter user      # 修改密码
+        revoke          # 收回权限
+    SET运算符 - 
+        union/union all                 # 并集
+        intersect                       # 交集
+        minus                           # 差集，A中独有的元素
+        除了 union all 之外，结果默认按第一列从小到大的顺序排列
+        column NAME noprint;            # 声明一个列，并且不输出，可用到列的别名上
+    高级子查询
+        多列子查询 - 子查询返回多个列
+        from子句中使用子查询
+        单列子查询 - 子查询返回一个列
+            Orcale8使用限制
+                select语句(from和where子句)
+                insert语句中的values列表中
+            Orcale9i使用限制
+                decode和case
+                select中除 group by 子句以外的所有子句中
+        相关子查询 - 一行接一行的顺序执行，主查询的每一行都执行一次子查询
+        Exists操作符 - 检查在子查询中是否存在满足条件的行
+        相关更新 - 用子查询更新或删除数据
+        WITH子句
+            可以避免在select语句中重复书写相同的语句块
+            WITH子句将该子句中的语句执行一次并存储到用户的临时表空间中
+            使用WITH子句可以提高查询效率
+            with NAME as SQL;           # SQL语句的结果是一个定值，可以是一个值，也可以是一个表
+            select XXX from TAB where NAME;      # 再用到上边用with定义的NAME
+4 PL/SQL  -  Procedure Language & Structured Query Language
+    是对SQL语言存储过程语言的扩展
+    由3个块组成，声明部分、执行部分、异常处理部分
+        declare XXX          # 声明部分，声明变量，类型及游标，以及局部的存储过程和函数
+        begin   XXX          # 执行部分，过程及SQL语句
+        exception  XXX       # 异常处理部分  
+        end;
+     set serveroutput on;          # 使用PL-SQL的必须操作
+     一个简单的PL-SQL
+         begin                     # declare 和 exception 如果没有内容可以省略
+            dbms_output.put_line('Hello world');    # 输出一行内容
+         end;
+     声明部分
+        NAME 类型;           # 变量，可以直接指定类型，也可以动态的获取表中列的类型(TAB.COL%type)
+        V_name          # 变量 
+        C_name          # 常量
+        E_name          # 异常
+        name_cursor     # 游标
+        name_record     # 记录类型 
+        v_sal number(8,2) := 0;         # 定义一个变量，并给默认值
+    记录类型 - 把逻辑相关的数据作为一个单元存储起来，称作PL/SQL RECORD的域(FIELD)，作用是存放不同但逻辑相关的信息。类似于JAVA中的类。 
+        declare              # 声明一个记录类型
+            type test_record is record(
+                v_name varchar2(20),
+                v_age number(3)
+            );
+            v_test_record test_record;     # 定义一个记录类型的成员变量，类似于JAVA中的创建对象
+            v_emp_record employees%rowtype;      # 不手动定义记录类型，直接让其等于employees表中的所有列。这样其中的变量名就等于列名
+        begin
+            v_test_record.v_name := 'Tom';
+            v_test_record.v_age := 18;
+            dbms_output.put_line('name:'||v_test_record.v_name || ' age:'||v_test_record.v_age);    
+    流程控制
+        条件语句
+            if 条件 then 语句 [elsif 条件 then 语句 else 语句] end if;
+            case 变量 when 条件1 then 返回1 when 条件2 then 返回2 [else 返回n] end;
+        循环语句
+            loop ... exit when; ... end loop;
+            while ... loop ... end loop;
+            for i in [reverse] 下限 .. 上限 loop ... end loop;          # reverse代表反着来
+        goto, exit
+            <<label>>  # 定义一个label     goto label    # 跳到laebl标签处
+            
+    游标的使用 - 类似于Iterator
+    异常的处理
+    存储函数、存储过程
+    触发器
+        
+    
+        
+                
+
             
             
             
             
             
-            
+常见的数据库对象
+     表     基本的数据存储集合，由行和列组成
+    视图    从表中抽出的逻辑上相关的数据集合
+    序列    提供有规律的数值
+    索引    提高查询的效率
+   同义词   给对象起别名
             
     
     
