@@ -302,11 +302,93 @@
             for i in [reverse] 下限 .. 上限 loop ... end loop;          # reverse代表反着来
         goto, exit
             <<label>>  # 定义一个label     goto label    # 跳到laebl标签处
-            
     游标的使用 - 类似于Iterator
+        处理多行记录的事务经常使用游标来实现
+        游标是一个指向上下文的句柄或指针
+        显式游标
+            1. 定义游标
+                cursor v_cursor is XXX;
+            2. 打开游标
+                open v_cursor;
+            3. 提取游标数据
+                fetch v_cursor into v_name;    # v_name 是定义的一个变量
+                while v_cursor%found loop      # 判断游标内是否还有值，有的话进行循环
+            4. 关闭游标
+                close v_cursor; 
+            游标属性
+                %found                           # 布尔类型，当最近一次读记录时成功返回，则为true
+            游标的for循环 - 可以取代上边的三步，定义游标不能省
+                for v_name in v_cursor loop
+                    XXX;
+                end loop;
+        隐式游标
     异常的处理
+        预定义错误 - 大约有24个，无需在程序中定义，Orcale自动引发
+        非预定义错误 - 需要用户在程序中定义，Orcale自动引发
+        用户定义错误 - 需要用户在程序中定义，然后显式地在程序中将其引发
+        语法
+            exception 
+              when 类型 then 
+              when 类型 then
+              when others then 
+        类型
+            No_data_found                        # 没有找到数据
+            Too_many_rows                        # 返回多行
+        非预定义错误
+            e_exception exception;               # 定义错误
+            pragma exception_init(e_exception, NUM)   # e_exception是上边定义的错误，NUM是实际出现的错误编码
+        用户定义错误
+            e_exception exception;               # 定义错误
+            raise e_exception;                   # 引发错误
     存储函数、存储过程
+        Orcale提供可以把PL/SQL程序存储在数据库中，并可以在任何地方来运行它，这样就叫存储过程或函数。
+        区别：
+            存储函数总向调用者返回数据
+            存储过程不返回数据
+        存储函数
+            create [or replace] function NAME(参数1 类型1, 参数2 类型2) return 返回类型
+            is/as
+                函数使用过程中，需要声明的变量、记录类型、游标
+            begin 
+                函数体
+                return XXX;    # 返回一个值，对应于返回类型
+            exception
+            end
+            select NAME() from dual;               # 调用函数
+            参数类型
+                参数 [in/out/in out] 类型
+                in - 默认，表示传递给函数的值在函数执行过程中不改变
+                out - 表示该值在函数中进行计算并通过该参数传递给调用语句
+                in out - 表示传递给函数的值可以变化并传递给调用语句
+        存储过程
+            create [or replace] procedure NAME(参数1 类型1, 参数2 类型2)
+            is
+                声明变量
+            begin
+                存储过程体
+            exception
+            end;
     触发器
+        类似过程和函数，都有声明，执行和异常处理过程的PL/SQL块
+        触发器在数据库里以独立的对象存储，与存储过程的区别：存储过程通过其它程序来启动运行或直接启动运行；触发器是由一个事件来启动运行。触发器是当某个事件发生时自动地隐式的运行。
+        触发器不能接收参数，运行触发器的过程叫触发或点火。
+        Orcale事件指的是对数据库的表进行的 insert, update, delete 操作或对视图进行类似的操作。
+        DML触发器
+            Oracle可以在DML操作前或操作后进行触发，并且可以对每个行或语句操作上进行触发。
+        组成
+            触发事件 - 因为什么导致触发器发生
+            触发时间 - 是在触发事件发生之前还是之后
+            触发器本身 - 该触发器的目的和意图
+            触发频率 - 触发器内定义的动作被执行的次数。语句级触发器(statement)和行级触发器(row)
+                statement - 当某触发器发生时，该触发器只执行一次
+                row - 当触发器反生时，对收到该操作影响的每一行数据，触发器都单独执行一次
+        创建触发器
+            create [or replace] trigger NAME 
+            before/after
+                insert/delete/update on TAB
+            [for each row]
+            [when 条件]
+                触发器主体
         
     
         
