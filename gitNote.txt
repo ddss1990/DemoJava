@@ -1,0 +1,81 @@
+GitHub 与 PyCharm 结合使用
+	一. GitHub设置添加SSH Key
+		1. 打开Git Bash，输入: ssh-keygen -t rsa -C "email"
+		2. 第一步会生成两个文件，id_rsa 和 id_rsa.pub，打开id_rsa.pub 复制内容
+		3. 进入GitHub的个人主页，进入Settings，选择SSH and GPG keys，然后再选择New SSH key
+		4. 将第二步复制的内容粘贴到Key对应的框里，为此次添加的SSH加一个Title
+		5. 在Git Bash中输入 ssh -T git@github.com进行连接测试
+		
+	二. PyCharm设置GitHub帐号和密码
+		1. File -> Settings -> GitHub -> 输入帐号和密码 -> 点击Test查看是否能成功连接
+		2. File -> Settings -> Git -> Path to Git executable -> 选择Git的安装目录，选到git.exe
+		3. VCS -> Import into Version Control -> Share Project on GitHub
+			这一步是将项目发布到GitHub上去，需要填写项目名，分支名和项目概述
+			然后选择要提交的文件，加上提交信息，然后Commit
+		4. 登录到GitHub，浏览是否提交成功
+
+
+GitHub 与 AS 结合使用
+	1. File -> Settings -> Version Control -> Git，选择Git的安装目录，选择到git.exe，然后Test一下
+	2. VCS -> Enable Control Integration -> Select Git
+	3. 设置不需要上传的文件
+	4.  File -> Settings -> Version Control -> GitHub，输入帐号和密码，然后Test一下
+	5. VCS -> Import into Version Control -> Share Project on GitHub
+		添加仓库名称和仓库描述，然后Share
+	6. 选择要提交的文件，进行Commit。登录GitHub浏览是否成功。
+	
+git init  // 初始化git仓库
+git remote add origin https://github.com/ddss1990/DemoJava.git// 匹配上远程仓库
+git add    // 添加文件
+git commit  // 提交
+git config --global user.email 1411356992@qq.com
+git config --global user.name dss
+git branch --set-upstream-to=origin/master// 建立本地分支与远程分支的映射关系
+git pull --rebase  // 更新代码
+git push -u origin master
+
+// 设置忽略文件
+vim .gitignore
+	// 在这里加入要忽略的文件和文件夹，也可以此文件本身加进去(.gitignore)
+	
+// github新建分支
+	git push -u origin branchName
+// gitk中文乱码
+  git config --global gui.encoding utf-8
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

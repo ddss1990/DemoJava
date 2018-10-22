@@ -389,6 +389,8 @@
             [for each row]
             [when 条件]
                 触发器主体
+        show triggers;                           # 查看创建的触发器
+        drop trigger NAME;                       # 删除触发器
         
     
         

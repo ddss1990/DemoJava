@@ -1,0 +1,24 @@
+持久化 - 把数据保存到可掉电式存储设备中以供之后使用
+JDBC - Java Database Connectivity, 是一个独立于特定数据库管理系统、通用的SQL数据库存取和操作的公共接口(一组API)
+    为不同的数据库提供了统一的一种途径。
+    API
+        面向应用的API - Java API,抽象接口，供developer使用(连接数据库，执行SQL语句，获得结果)
+        面向数据库的API - Java Driver API, 供开发商开发数据库驱动程序用
+  
+  连接数据库 
+      // 创建一个Driver实现类的对象
+      Driver driver = new Driver();              // com.mysql.cj.jdbc.Driver
+      // 准备连接数据库的基本信息: url, user, password
+      String url = "jdbc:mysql://localhost:3306/test" + "?serverTimezone=GMT%2B8";
+      Properties info = new Properties();
+      info.put("user", NAME);
+      info.put("password", PWD);
+      // 获取数据库连接
+      Connection connect = driver.connect(url, info);
+      
+      URL - 协议:<子协议>:<子名称>
+        协议 - 总是 jdbc
+        子协议 - 用于标识一个数据库驱动程序
+        子名称 - 一种标识数据库的方法
+        jdbc:mysql://localhost:3306/test
+        
