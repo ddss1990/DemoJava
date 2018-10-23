@@ -1,5 +1,7 @@
 package com.dss.java.tests;
 
+import org.junit.Test;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -42,7 +44,8 @@ public class TestProxy {
         clothFactory.productCloth();
     }
 
-    private static void testDynamicProxy() {
+    @Test
+    public void testDynamicProxy() {
         // 被代理类的对象
         RealSubject realSubject = new RealSubject();
         // 实现InvocationHandler接口的对象
@@ -55,7 +58,8 @@ public class TestProxy {
     }
 
     // 静态代理
-    private static void testStaticProxy() {
+    @Test
+    public  void testStaticProxy() {
         // 创建被代理类对象
         NikeClothFactory nikeClothFactory = new NikeClothFactory();
         // 创建代理类对象
@@ -220,5 +224,14 @@ class DynamicProxyFactory {
         mInvocation.setObject(object);
         Object instance = Proxy.newProxyInstance(object.getClass().getClassLoader(), object.getClass().getInterfaces(), mInvocation);
         return instance;
+    }
+}
+
+class TestInvocation implements InvocationHandler {
+
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        return null;
     }
 }

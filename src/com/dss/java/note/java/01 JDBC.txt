@@ -4,21 +4,70 @@ JDBC - Java Database Connectivity, 是一个独立于特定数据库管理系统
     API
         面向应用的API - Java API,抽象接口，供developer使用(连接数据库，执行SQL语句，获得结果)
         面向数据库的API - Java Driver API, 供开发商开发数据库驱动程序用
-  
-  连接数据库 
-      // 创建一个Driver实现类的对象
-      Driver driver = new Driver();              // com.mysql.cj.jdbc.Driver
-      // 准备连接数据库的基本信息: url, user, password
-      String url = "jdbc:mysql://localhost:3306/test" + "?serverTimezone=GMT%2B8";
-      Properties info = new Properties();
-      info.put("user", NAME);
-      info.put("password", PWD);
-      // 获取数据库连接
-      Connection connect = driver.connect(url, info);
-      
-      URL - 协议:<子协议>:<子名称>
-        协议 - 总是 jdbc
-        子协议 - 用于标识一个数据库驱动程序
-        子名称 - 一种标识数据库的方法
-        jdbc:mysql://localhost:3306/test
+    1 获取数据库连接对象
+        1.1 通过Driver接口获取数据库对象 
+          // 创建一个Driver实现类的对象
+          Driver driver = new Driver();              // com.mysql.cj.jdbc.Driver
+          // 准备连接数据库的基本信息: url, user, password
+          String url = "jdbc:mysql://localhost:3306/test" + "?serverTimezone=GMT%2B8";
+          Properties info = new Properties();
+          info.put("user", NAME);
+          info.put("password", PWD);
+          // 获取数据库连接
+          Connection connect = driver.connect(url, info);
+          
+          URL - 协议:<子协议>:<子名称>
+            协议 - 总是 jdbc
+            子协议 - 用于标识一个数据库驱动程序
+            子名称 - 一种标识数据库的方法
+            jdbc:mysql://localhost:3306/test
+          Orcale
+            orcale.jdbc.driver.OrcaleDriver    -  jdbc:orcale:thin:@localhost:1521:test   
+        通用的获取数据库连接对象 - 解耦
+            // 将连接数据库所用到的信息都存入到该文件中，通过ClassLoader得到输入流
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(name);
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            
+            // 从Properties读取指定的数据
+            String driverClass = properties.getProperty("driver");
+            String jdbcUrl = properties.getProperty("jdbcUrl");
+            String user = properties.getProperty("user");
+            String password = properties.getProperty("password");
+            
+            // 封装连接数据库所用到的信息
+            Properties info = new Properties();
+            info.put("user", user);
+            info.put("password", password);
+            
+            // 通过反射去获得Driver对象，然后再去执行connect方法连接数据库并获得连接对象
+            Class<?> aClass = Class.forName(driverClass);
+            Object o = aClass.newInstance();
+            Method connect = aClass.getMethod("connect", String.class, Properties.class);
+            Connection connection = (Connection) connect.invoke(o, jdbcUrl, info);
+            
+            // 这里也可以直接使用Driver类，这里的Driver类是java.sql. 下的，是所有各个数据库厂商定义的Driver的父类
+            java.sql.Driver driver = (java.sql.Driver) Class.forName(driverClass).newInstance();
+            Connection connect = driver.connect(jdbcUrl, info);
+        1.2 通过DriverManager获取数据库连接对象 
+            // 加载数据库驱动程序，这里应该是注册驱动，但是通过观察源码发现，在Driver的实现类中，有静态代码块，用于注册驱动。
+            // 故这里只需要加载指定的类即可
+            Class.forName(driverClass);
+            Connection connection = DriverManager.getConnection(jdbcUrl, user, password);
+          好处
+            1. 可直接通过重载的 getConnection() 方法获取数据库连接对象，较为方便。
+            2. 同时管理多个驱动程序，会根据 url 的不同，去获得不同的连接对象
+    2 通过Statement执行更新操作
+        // 通过数据库连接对象获得Statement对象
+        Statement statement = connection.createStatement();
+        // 执行SQL语句，insert, delete, update
+        statement.execute(sql);
+        statement.executeUpdate(sql);
+        // 关闭Statement和数据库连接
+        statement.close();  connection.close();
+        
+        
+        
+        
+        
         
