@@ -1,5 +1,6 @@
 package com.dss.java.tests.databases;
 
+import com.dss.java.tests.databases.utils.JDBCUtils;
 import com.mysql.jdbc.Driver;
 import org.junit.Test;
 
@@ -7,10 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Properties;
 
 /**
@@ -140,12 +138,12 @@ public class TestJDBC {
      * 通过JDBC操作数据表
      */
     @Test
-    public void testStatement() throws Exception {
+    public void testUpdate() throws Exception {
         // 1. 获取数据库连接
         Connection connection = getConnection();
         // 2. 准备SQL语句
         String sql = "insert into test_jdbc_users(name, email, brith) " +
-                    "values('Tom', 'tom@abc.com', curdate())";
+                "values('Tom', 'tom@abc.com', curdate())";
         // 3. 获取Statement对象，用于执行SQL语句
         Statement statement = connection.createStatement();
         // 4. 执行SQL语句
@@ -155,5 +153,30 @@ public class TestJDBC {
         statement.close();
         // 6. 关闭连接
         connection.close();
+    }
+
+    /**
+     * 通过ResultSet执行查询操作
+     */
+    @Test
+    public void testQuery() throws Exception {
+        // 1. 获取数据库连接
+        Connection connection = getConnection();
+        // 2. 获得Statement对象
+        Statement statement = connection.createStatement();
+        // 3. 准备SQL语句
+        String sql = "select _id, name, email, brith from test_jdbc_users";
+        // 4. 执行SQL语句，获得ResultSet结果集
+        ResultSet set = statement.executeQuery(sql);
+        // 5. 处理结果集
+        while (set.next()) {
+            int id = set.getInt("_id");
+            String name = set.getString(2);
+            Date birth = set.getDate("brith");
+            String email = set.getString("email");
+            System.out.println("id = " + id + ", name = " + name + ", email = " + email + ", birth = " + birth);
+        }
+        // 6. 释放资源
+        JDBCUtils.releaseConnection(set, statement, connection);
     }
 }

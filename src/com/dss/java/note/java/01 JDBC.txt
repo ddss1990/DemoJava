@@ -65,6 +65,25 @@ JDBC - Java Database Connectivity, 是一个独立于特定数据库管理系统
         statement.executeUpdate(sql);
         // 关闭Statement和数据库连接
         statement.close();  connection.close();
+        方法比较
+            execute()       - 用于执行返回多个结果集、多个更新计数或二者结合的语句，仅在语句能返回多个ResultSet对象、多个更新计数或ResultSet对象与更新计数组合时使用。
+            executeQuery()  - 用来执行 select 查询语句
+            executeUpdate() - 用于执行 insert, update, delete 以及 DDL(建表，删表等)。返回值代表影响的行数。当是DDL时，返回值是0。
+    3 ResultSet执行查询操作
+        ResultSet - 结果集，封装了使用JDBC进行查询的结果
+        // 获得结果集
+        ResultSet set = statement.executeQuery(sql);
+        // 获得每一行
+        while (set.next()) {        // 判断是否有下一行，如果有，自动指向下一行 
+            // 获得每一列
+            int id = set.getInt("_id");
+            String name = set.getString(2);
+            Date birth = set.getDate("brith");
+            String email = set.getString("email");
+        }
+        // 关闭结果集
+        set.close();
+    4 
         
         
         

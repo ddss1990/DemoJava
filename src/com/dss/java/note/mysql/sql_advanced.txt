@@ -513,6 +513,8 @@ Base
       create table 新表 like 旧表;
     复制表结构及数据
       create table 新表 select * from 旧表;
+  创建数据表加入说明
+    create table NAME(_id int auto_increment comment 'XXX',);
   数据库，表，流程控制，函数，视图
                 查看已存的                  查看创建的语句 
     数据库     show databases               show create database NAME;

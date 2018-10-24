@@ -2,10 +2,7 @@ package com.dss.java.tests.databases.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Properties;
 
 /**
@@ -15,6 +12,11 @@ import java.util.Properties;
  * Description: JDBC utils
  */
 public class JDBCUtils {
+
+    public static Connection getConnection() throws SQLException, IOException, ClassNotFoundException {
+        Connection connection = getConnection("jdbc.properties");
+        return connection;
+    }
 
     /**
      * 通过读取配置文件，获取数据库连接
@@ -41,12 +43,42 @@ public class JDBCUtils {
     }
 
     /**
-     * 关闭连接
+     * 关闭连接，释放资源
      *
      * @param statement
      * @param connection
      */
     public static void releaseConnection(Statement statement, Connection connection) {
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 关闭连接，释放资源
+     *
+     * @param statement
+     * @param connection
+     */
+    public static void releaseConnection(ResultSet set, Statement statement, Connection connection) {
+        if (set != null) {
+            try {
+                set.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         if (statement != null) {
             try {
                 statement.close();
