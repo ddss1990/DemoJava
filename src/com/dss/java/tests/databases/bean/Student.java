@@ -1,4 +1,4 @@
-package com.dss.java.tests.databases.exercise.e1;
+package com.dss.java.tests.databases.bean;
 
 import org.junit.Test;
 
@@ -16,6 +16,32 @@ public class Student {
     private String mStudentName;
     private String mLocation;
     private int mGrade;
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "mFlowID=" + mFlowID +
+                ", mType=" + mType +
+                ", mIDCard='" + mIDCard + '\'' +
+                ", mExamCard='" + mExamCard + '\'' +
+                ", mStudentName='" + mStudentName + '\'' +
+                ", mLocation='" + mLocation + '\'' +
+                ", mGrade=" + mGrade +
+                '}';
+    }
+
+    public Student(int flowID, int type, String IDCard, String examCard, String studentName, String location, int grade) {
+        mFlowID = flowID;
+        mType = type;
+        mIDCard = IDCard;
+        mExamCard = examCard;
+        mStudentName = studentName;
+        mLocation = location;
+        mGrade = grade;
+    }
+
+    public Student() {
+    }
 
     public int getFlowID() {
         return mFlowID;

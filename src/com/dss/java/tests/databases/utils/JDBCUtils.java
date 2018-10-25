@@ -26,7 +26,7 @@ public class JDBCUtils {
      */
     public static Connection getConnection(String name) throws IOException, ClassNotFoundException, SQLException {
         // 1. 获取输入流
-        InputStream is = JDBCUtils.class.getClass().getClassLoader().getResourceAsStream(name);
+        InputStream is = JDBCUtils.class.getClassLoader().getResourceAsStream(name);
         Properties properties = new Properties();
         // 2. 加载输入流
         properties.load(is);

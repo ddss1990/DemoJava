@@ -83,7 +83,78 @@ JDBC - Java Database Connectivity, 是一个独立于特定数据库管理系统
         }
         // 关闭结果集
         set.close();
-    4 
+    4 PreparedStatement - 是Statement的子接口，提供了占位符功能，index从1开始
+        /**
+        * java.sql.Date 对象   new Date(long date);
+        * date 代表毫秒数
+        * 如果抽方法的话，可以将参数设置成可变参数   
+        * insertData(String sql, Object ... args)
+        */
+        // 编写SQL语句，使用?代替列
+        String sql = "insert into NAME values(?,?,?...);
+        // 获得PreparedStatement对象
+        PreparedStatement statement = connection.prepareStatement(sql);
+        // 设置占位符的值
+        statement.setString(index, value);
+        // 执行Statement
+        statement.executeQuery();  或
+        statement.executeUpdate();
+      好处
+        有效的防止SQL注入，因为SQL是拼写的
+            String user = "Tom";
+            String password = "123123";
+            String sql = "select * from users where user = '" + user + "' and password = '" + password + "';";
+            // 如果正常写用户名和密码，不会出现问题；但当恶意的拼接SQL语句后，会出现问题
+            String user = "a' or password = ";
+            String password = " or '1' = '1'";   
+            // 拼接后的SQL语句
+            sql = "select * from users where user = 'a'
+                                    or password = ' and password = '
+                                    or '1' = '1'";
+        提高可读性
+        最大可能提高性能
+    5 元数据 - 有关数据库管理系统的各种信息(数据库中的各个表，表中的各个列，数据类型，触发器，存储过程等)
+        ResultSetMetaData - 用于获取关于ResultData对象中列的类型和属性信息的对象
+            是描述ResultSet的元数据对象，可从中得到列名等信息。
+          一些方法
+            getColumnCount()                     # 查询了多少列
+            getColumnLabel(int index)            # 获取指定列的别名，从1开始
+        private <T> T getObject(Class<T> clazz, String sql, Object ... args)
+            为查询的列加别名，别名对应于类中的变量名，只有名称匹配时，才能通过反射去设置变量的值
+            // 通过 ResultSet 得到 ResultSetMetaData
+            ResultSetMetaData meta = set.getMetaData();
+            // 通过 ResultSetMetaData 去获得每个列的别名，并通过 ResultSet 获得每个列的值
+            int count = meta.getColumnCount();
+            for (int i = 0; i < count; i++) {
+                String label = meta.getColumnLabel(i + 1);
+                Object o = set.getObject(label);
+            }
+    6 DAO - Data Access Object
+        访问信息数据的类，包含了对数据的CRUD(create, retrieve ,update, delete)，而不包含任何业务相关的信息。
+        实现功能的模块化，更利于代码的维护和升级。
+        可以被子类继承或直接使用。
+        应该包含的方法：
+            // 更新操作，包含 insert, update, delete
+            void update(String sql, Object ... args)
+            // 查询一条记录，返回对应的对象
+            <T> T getObject(Class<T> clazz, String sql, Object ... args)
+            // 查询多条记录，返回一个列表
+            <T> List<T> getObjectLists(Class<T> clazz, String sql, Object ... args)
+            // 返回某条记录的某个字段的值或一个统计的值(一共有多少条记录等)
+            <E> E getValue(String sql, Object ... args)
+    7 
+        
+        
+
+
+        
+        
+
+
+        
+        
+        
+        
         
         
         

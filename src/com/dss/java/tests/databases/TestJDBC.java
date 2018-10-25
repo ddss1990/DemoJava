@@ -4,10 +4,8 @@ import com.dss.java.tests.databases.utils.JDBCUtils;
 import com.mysql.jdbc.Driver;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.Properties;
 
@@ -142,7 +140,7 @@ public class TestJDBC {
         // 1. 获取数据库连接
         Connection connection = getConnection();
         // 2. 准备SQL语句
-        String sql = "insert into test_jdbc_users(name, email, brith) " +
+        String sql = "insert into test_jdbc_users(name, email, birth) " +
                 "values('Tom', 'tom@abc.com', curdate())";
         // 3. 获取Statement对象，用于执行SQL语句
         Statement statement = connection.createStatement();
@@ -178,5 +176,65 @@ public class TestJDBC {
         }
         // 6. 释放资源
         JDBCUtils.releaseConnection(set, statement, connection);
+    }
+
+    /**
+     * 测试PrepareStatement
+     */
+    @Test
+    public void testPrepareStatement() {
+        try {
+            insertPrepareStatement("张三", "zhang3@abc.com", System.currentTimeMillis());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 使用PrepareStatement插入数据
+     *
+     * @param name
+     * @param email
+     * @param birth
+     */
+    private void insertPrepareStatement(String name, String email, long birth) throws Exception {
+        // 1. 获得数据库连接
+        Connection connection = getConnection();
+        // 2. 准备PrepareStatement用的SQL语句
+        String sql = "insert into test_jdbc_users(name, email, brith) values(?,?,?);";
+        // 3. 获得PrepareStatement对象
+        PreparedStatement statement = connection.prepareStatement(sql);
+        // 4. 为SQL语句的占位符设置值
+        statement.setString(1, name);
+        statement.setString(2, email);
+        statement.setDate(3, new Date(birth));
+        // 5. 执行
+        statement.executeUpdate();
+        // 6. 释放连接
+        JDBCUtils.releaseConnection(statement, connection);
+    }
+
+
+    /**
+     * 使用PrepareStatement插入数据，升级版
+     *
+     * @param sql
+     * @param args
+     * @throws Exception
+     */
+    private void insertPrepareStatement(String sql, Object... args) throws Exception {
+        // 1. 获得数据库连接
+        Connection connection = getConnection();
+        // 2. 获得PrepareStatement对象
+        PreparedStatement statement = connection.prepareStatement(sql);
+        // 3. 为SQL语句的占位符设置值
+        for (int i = 0; i < args.length; i++) {
+            Object arg = args[i];
+            statement.setObject(i + 1, arg);
+        }
+        // 4. 执行
+        statement.executeUpdate();
+        // 5. 释放连接
+        JDBCUtils.releaseConnection(statement, connection);
     }
 }
