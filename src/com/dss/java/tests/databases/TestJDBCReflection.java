@@ -4,9 +4,11 @@ import com.dss.java.tests.databases.bean.Student;
 import com.dss.java.tests.databases.bean.User;
 import com.dss.java.tests.databases.utils.JDBCUtils;
 import com.dss.java.tests.databases.utils.ReflectionUtils;
+import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,7 +131,11 @@ public class TestJDBCReflection {
                     String label = metaData.getColumnLabel(i + 1);
                     Object object = resultSet.getObject(label);
                     //System.out.println("label = " + label + ", value = " + object);
-                    ReflectionUtils.setFieldValue(bean, label, object);
+                    // 自定义的方法，通过反射去直接修改属性的值
+                    //ReflectionUtils.setFieldValue(bean, label, object);
+                    // Apache导入的库(commons-beanutils)，使用已封装的方法
+                    // 此方法修改值是通过其set方法修改的
+                    BeanUtils.setProperty(bean, label, object);
                 }
                 list.add(bean);
             }
@@ -143,11 +149,52 @@ public class TestJDBCReflection {
             e.printStackTrace();
         } catch (InstantiationException e) {
             e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         } finally {
             // 释放资源
             JDBCUtils.releaseConnection(resultSet, statement, connection);
         }
         return list;
+    }
+
+    private <T> List<T> getBeansFromResultSet(ResultSet set, Class<T> clazz) {
+        T bean = null;
+        List<T> beans = null;
+        List<String> labels = getColumnLabels(set);
+        try {
+            beans = new ArrayList<>();
+            while (set.next()) {
+                bean = clazz.newInstance();
+                for (String label : labels) {
+                    Object value = set.getObject(label);
+                    BeanUtils.setProperty(bean, label, value);
+                }
+                beans.add(bean);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return beans;
+    }
+
+    private List<String> getColumnLabels(ResultSet set) {
+        List<String> labels = new ArrayList<>();
+        try {
+            ResultSetMetaData metaData = set.getMetaData();
+            for (int i = 0; i < metaData.getColumnCount(); i++) {
+                labels.add(metaData.getColumnName(i + 1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return labels;
     }
 
     @Test
