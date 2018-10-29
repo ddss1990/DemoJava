@@ -1,10 +1,11 @@
 package com.dss.java.tests.databases;
 
+import com.dss.java.tests.databases.utils.DAO;
 import com.dss.java.tests.databases.utils.JDBCUtils;
 import com.mysql.jdbc.Driver;
 import org.junit.Test;
 
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.Properties;
@@ -236,5 +237,140 @@ public class TestJDBC {
         statement.executeUpdate();
         // 5. 释放连接
         JDBCUtils.releaseConnection(statement, connection);
+    }
+
+    /**
+     * 测试填充大数据类型
+     */
+    @Test
+    public void testSetBlob() {
+        setBlob();
+    }
+
+    /**
+     * 插入大对象类型的数据
+     */
+    private void setBlob() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = JDBCUtils.getConnection();
+            String sql = "insert into test_jdbc_users(name, email, birth, picture) values(?,?,?,?)";
+            statement = connection.prepareStatement(sql);
+            // 替换占位符
+            statement.setString(1, "张飞");
+            statement.setString(2, "zhangfei@abc.com");
+            statement.setDate(3, new Date(System.currentTimeMillis()));
+            InputStream blob = new FileInputStream("C:\\Users\\Chris\\Pictures\\飞机\\F-35B.jpg");
+            statement.setBlob(4, blob);
+            // 执行SQL
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.releaseConnection(statement, connection);
+        }
+    }
+
+    /**
+     * 测试读取大对象类型的数据
+     */
+    @Test
+    public void testGetBlob() {
+        getBlob();
+    }
+
+    /**
+     * 读取大对象类型的数据
+     */
+    private void getBlob() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = JDBCUtils.getConnection();
+            String sql = "select _id, name , email, birth, picture from test_jdbc_users where _id = ?";
+            statement = connection.prepareStatement(sql);
+            // 替换占位符
+            int id = 1006;
+            statement.setInt(1, id);
+            // 得到结果集
+            resultSet = statement.executeQuery();
+            // 解析结果集
+            if (resultSet.next()) {
+                int _id = resultSet.getInt("_id");
+                String name = resultSet.getString("name");
+                String email = resultSet.getString("email");
+                Date birth = resultSet.getDate("birth");
+                System.out.println("_id = " + _id + ", name = " + name + ", email = " + email + ", birth = " + birth);
+                // 得到大对象
+                Blob blob = resultSet.getBlob(5);
+                // 通过大对象得到输入流
+                InputStream is = blob.getBinaryStream();
+                OutputStream os = new FileOutputStream("picture.jpg");
+                // 将读取出来的大对象文件保存下来
+                int len = 0;
+                byte[] datas = new byte[1024];
+                while ((len = is.read(datas)) != -1) {
+                    os.write(datas, 0, len);
+                }
+                os.close();
+                is.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.releaseConnection(resultSet, statement, connection);
+        }
+    }
+
+    /**
+     * 测试事务，用户1向用户2转账500
+     */
+    @Test
+    public void testTransaction() {
+        Connection connection = null;
+        try {
+            DAO dao = new DAO();
+            // 使用事务，需要共用一个Connection
+            connection = JDBCUtils.getConnection();
+            boolean autoCommit = connection.getAutoCommit();
+            System.out.println("autoCommit = " + autoCommit);
+            // 并且需要关闭自动提交
+            connection.setAutoCommit(false);
+
+            // 用户1的余额减去500
+            String sql = "update users set balance = balance - 500 where _id = 1";
+            dao.update(connection, sql);
+
+            // 人为的加上一个错误，查看结果，当不使用事务的时候，会看到用户1的余额有变动，2的无变动
+            // 保证事务的唯一性，不能出现一个用户的余额变动，另外一个用户的余额不变
+            int i = 10 / 0;
+
+            // 用户2的余额加上500
+            sql = "update users set balance = balance + 500 where _id = 2";
+            dao.update(connection, sql);
+
+            // 没有错误，就对事务进行提交
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                // 出现异常，就进行回滚事务
+                connection.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            JDBCUtils.releaseConnection(null, connection);
+        }
     }
 }
