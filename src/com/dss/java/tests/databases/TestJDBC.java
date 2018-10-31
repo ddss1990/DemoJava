@@ -468,9 +468,39 @@ public class TestJDBC {
 //            connectionPoolDBCP();
             // 通过DBCP工厂来获取数据库连接对象
 //             dbcpFactory();
+            // 使用C3P0获取数据库连接对象
+            c3p0Normal();
+            // C3P0通过配置文件来获得数据库连接对象
+            c3p0ConfigFile();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     *  通过读取配置文件来获得数据库连接对象
+     */
+    private void c3p0ConfigFile() throws SQLException {
+        ComboPooledDataSource dataSource = new ComboPooledDataSource("con_pool_chris");
+        printDBCPConfig(dataSource);
+
+    }
+
+    /**
+     * 通过设置参数的方式来获得数据库连接对象
+     * @throws PropertyVetoException
+     */
+    private void c3p0Normal() throws PropertyVetoException, SQLException {
+        ComboPooledDataSource cpds = new ComboPooledDataSource();
+        cpds.setUser("root");
+        cpds.setPassword("chris");
+        cpds.setJdbcUrl("jdbc:mysql://localhost:3306/test");
+        cpds.setDriverClass("com.mysql.cj.jdbc.Driver");
+        printDBCPConfig(cpds);
+        Connection connection = cpds.getConnection();
+        System.out.println("connection = " + connection);
+        String customizerClassName = cpds.getConnectionCustomizerClassName();
+        System.out.println("customizerClassName = " + customizerClassName);
     }
 
     /**

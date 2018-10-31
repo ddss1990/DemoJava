@@ -1,0 +1,23 @@
+<c3p0-config>
+    <named-config name="con_pool_chris">
+        <!-- 数据库连接属性 -->
+        <property name="user">root</property>
+        <property name="password">chris</property>
+        <property name="jdbcUrl">jdbc:mysql:///test</property>
+        <property name="driverClass">com.mysql.cj.jdbc.Driver</property>
+
+        <!-- 连接池属性 -->
+        <!-- 数据库连接池中连接不足时，服务器每次创建连接的次数 -->
+        <property name="acquireIncrement">5</property>
+        <!-- 初始化连接池时连接对象的个数 -->
+        <property name="initialPoolSize">3</property>
+        <!-- 连接池中最大保有连接对象的个数 -->
+        <property name="maxPoolSize">8</property>
+        <!-- 连接池中最少保有连接对象的个数 -->
+        <property name="minPoolSize">2</property>
+        <!-- 连接池中最大保有Statement的个数 -->
+        <property name="maxStatements">20</property>
+        <!-- 每个连接对象可以同时使用的最大Statement个数 -->
+        <property name="maxStatementsPerConnection">5</property>
+    </named-config>
+</c3p0-config>

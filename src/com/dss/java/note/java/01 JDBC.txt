@@ -256,6 +256,29 @@ JDBC - Java Database Connectivity, 是一个独立于特定数据库管理系统
                     InputStream is = getClass().getClassLoader().getResourceAsStream("jdcp.properties");
                     properties.load(is);
                     BasicDataSource source = BasicDataSourceFactory.createDataSource(properties);
+            C3P0 - c3p0,C3P0的工厂类已经过时
+                ComboPooledDataSource source = new ComboPooledDataSource();
+                source.setDriverClass("com.mysql.cj.jdbc.Driver");
+                source.setJdbcUrl("jdbc:mysql://localhost:3306/test");
+                source.setUser("root");
+                source.setPassword("chris");
+                Connection connection = source.getConnection();
+                
+                // 标准化，使用配置文件来创建数据库连接池对象 
+                // 配置文件使用XML c3p0-config.xml ,属性如下
+                <c3p0-config>
+                    <named-config name="XXX">
+                        <property name="user">root</property>
+                        ......
+                    </named-config>
+                </c3p0-config>
+                    user, password, driverClass, jdbcUrl
+                    acquireIncrement                 // 当连接池中数据库连接对象不足时，一次向服务器申请的连接个数
+                    initialPoolSize                  // 初始化数据库连接池时连接的数量
+                    maxPoolSize/minPoolSize          // 数据库连接池中最大/最小的数据库连接数
+                    maxStatements                    // C3P0连接池可以维护的Statement的个数
+                    maxStatementsPerConnection       // 每个连接同时使用的Statemetn的对象个数
+                DataSource source = new ComboPooledDataSource("XXX");
     12 
             
         

@@ -1,5 +1,7 @@
 package com.dss.java.tests.databases.utils;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -13,9 +15,31 @@ import java.util.Properties;
  */
 public class JDBCUtils {
 
+    /**
+     * 获得数据库连接对象
+     */
+    @Deprecated
     public static Connection getConnection() throws SQLException, IOException, ClassNotFoundException {
         Connection connection = getConnection("jdbc.properties");
         return connection;
+    }
+
+    /**
+     *  声明一个静态的数据库连接池对象，并在静态代码块中通过加载配置文件初始化
+     */
+    private static ComboPooledDataSource sDataSource;
+    static {
+        sDataSource = new ComboPooledDataSource("con_pool_chris");
+    }
+
+    /**
+     * 通过数据库连接池去获得数据库连接对象，
+     * 通过这种方式得到的数据库连接对象，释放资源时并不是真的关闭连接，而是将数据库连接对象归还给数据库连接池
+     * @return
+     * @throws SQLException
+     */
+    public static Connection getConnection2() throws SQLException {
+        return sDataSource.getConnection();
     }
 
     /**
@@ -24,6 +48,7 @@ public class JDBCUtils {
      * @param name
      * @return
      */
+    @Deprecated
     public static Connection getConnection(String name) throws IOException, ClassNotFoundException, SQLException {
         // 1. 获取输入流
         InputStream is = JDBCUtils.class.getClassLoader().getResourceAsStream(name);
@@ -92,6 +117,42 @@ public class JDBCUtils {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    /**
+     * 关闭自动提交，开启事务
+     * @param connection
+     */
+    public static void beginTransaction(Connection connection) {
+        try {
+            connection.setAutoCommit(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 提交事务
+     * @param connection
+     */
+    public static void commitTransaction(Connection connection) {
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 回滚事务
+     * @param connection
+     */
+    public static void rollbackTransaction(Connection connection) {
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
