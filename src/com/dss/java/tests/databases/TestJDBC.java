@@ -2,9 +2,14 @@ package com.dss.java.tests.databases;
 
 import com.dss.java.tests.databases.utils.DAO;
 import com.dss.java.tests.databases.utils.JDBCUtils;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mysql.jdbc.Driver;
+import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.junit.Test;
 
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.sql.*;
@@ -372,5 +377,169 @@ public class TestJDBC {
         } finally {
             JDBCUtils.releaseConnection(null, connection);
         }
+    }
+
+    /**
+     * 测试批处理操作
+     */
+    @Test
+    public void testBatch() {
+        long s = batchWithStatement(); // 13737
+        System.out.println("用时 " + s + " ms");
+        long ps = batchWithPreparedStatement(); // 12560
+        System.out.println("用时 " + ps + " ms");
+    }
+
+    /**
+     * 使用PreparedStatement执行批处理操作
+     *
+     * @return
+     */
+    private long batchWithPreparedStatement() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        long diff = 0;
+        try {
+            connection = JDBCUtils.getConnection();
+            String baseSQL = "insert into big_data values(?, ?, ?);";
+            statement = connection.prepareStatement(baseSQL);
+            // 开启事务
+            JDBCUtils.beginTransaction(connection);
+            long begin = System.currentTimeMillis();
+            for (int i = 0; i < 100000; i++) {
+                int start = 100001 + i;
+                statement.setInt(1, start);
+                statement.setString(2, "name_" + start);
+                statement.setDate(3, new Date(System.currentTimeMillis()));
+                statement.executeUpdate();
+            }
+            // 提交事务
+            JDBCUtils.commitTransaction(connection);
+            long end = System.currentTimeMillis();
+            diff = end - begin;
+        } catch (Exception e) {
+            JDBCUtils.rollbackTransaction(connection);
+            e.printStackTrace();
+        }
+        return diff;
+    }
+
+    /**
+     * 使用Statement进行批量处理操作
+     */
+    private long batchWithStatement() {
+        Connection connection = null;
+        Statement statement = null;
+        long diff = 0;
+
+        try {
+            connection = JDBCUtils.getConnection();
+            statement = connection.createStatement();
+            // 开始事务
+            JDBCUtils.beginTransaction(connection);
+            // 配置SQL语句
+            String baseSql = "insert into big_data values(%d, '%s', '%s');";
+            long begin = System.currentTimeMillis();
+            //System.out.println("sql = " + sql);
+            for (int i = 0; i < 100000; i++) {
+                String sql = String.format(baseSql, i + 1, "name_" + i, new Date(System.currentTimeMillis()));
+                statement.executeUpdate(sql);
+            }
+            // 提交事务
+            JDBCUtils.commitTransaction(connection);
+            // 结束时间
+            long end = System.currentTimeMillis();
+            diff = end - begin;
+        } catch (Exception e) {
+            // 出现异常，回滚事务
+            JDBCUtils.rollbackTransaction(connection);
+            e.printStackTrace();
+        }
+        return diff;
+    }
+
+    /**
+     * 测试数据库连接池
+     */
+    @Test
+    public void testConnectionPool() {
+        try {
+            // 使用DBCP连接池来获取数据库连接对象
+//            connectionPoolDBCP();
+            // 通过DBCP工厂来获取数据库连接对象
+//             dbcpFactory();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 使用DBCPFactory来获得数据库连接对象
+     */
+    private void dbcpFactory() throws Exception {
+        Properties properties = new Properties();
+        InputStream is = getClass().getClassLoader().getResourceAsStream("dbcp.properties");
+        properties.load(is);
+        DataSource source = BasicDataSourceFactory.createDataSource(properties);
+        Connection connection = source.getConnection();
+        System.out.println("connection = " + connection);
+        printDBCPConfig((BasicDataSource) source);
+    }
+
+    /**
+     * 使用DBCP来管理数据库连接池
+     */
+    private void connectionPoolDBCP() throws SQLException {
+        // 创建 DataSource对象
+        BasicDataSource source = new BasicDataSource();
+        // 设置连接数据库需要的属性
+        source.setUsername("root");
+        source.setPassword("chris");
+        source.setUrl("jdbc:mysql://localhost:3306/test");
+        source.setDriverClassName("com.mysql.cj.jdbc.Driver");
+
+        printDBCPConfig(source);
+        // 配置一些常用的属性 source.setMinIdle();
+        source.setInitialSize(5);
+        source.setMaxActive(5);
+        source.setMinIdle(1);
+        source.setMaxWait(3000);
+        printDBCPConfig(source);
+
+        // 通过DataSource获取数据库连接对象
+        Connection connection = source.getConnection();
+        System.out.println("connection = " + connection.getClass());
+
+    }
+
+    /**
+     * 打印一些DBCP线程池的属性
+     *
+     * @param dataSource
+     */
+    private void printDBCPConfig(DataSource dataSource) throws SQLException {
+        Connection connection = null;
+        if (dataSource instanceof BasicDataSource) {
+            BasicDataSource source = (BasicDataSource) dataSource;
+            int initialSize = source.getInitialSize();
+            int maxActive = source.getMaxActive();
+            int maxIdle = source.getMaxIdle();
+            int minIdle = source.getMinIdle();
+            long maxWait = source.getMaxWait();
+            System.out.println("initialSize = " + initialSize + ", maxActive = " + maxActive +
+                    ", maxIdle = " + maxIdle + ", minIdle = " + minIdle + " maxWait = " + maxWait);
+            connection = source.getConnection();
+        } else if (dataSource instanceof ComboPooledDataSource) {
+            ComboPooledDataSource source = (ComboPooledDataSource) dataSource;
+            int initialPoolSize = source.getInitialPoolSize();
+            int maxPoolSize = source.getMaxPoolSize();
+            int minPoolSize = source.getMinPoolSize();
+            int maxIdleTime = source.getMaxIdleTime();
+            int acquireIncrement = source.getAcquireIncrement();
+            System.out.println("initialPoolSize = " + initialPoolSize + " , maxPoolSize = " + maxPoolSize +
+                    " , minPoolSize =" + minPoolSize + ", maxIdleTime = " + maxIdleTime + ", acquireIncrement = " + acquireIncrement);
+            connection = source.getConnection();
+        }
+        System.out.println("connection = " + connection);
     }
 }
