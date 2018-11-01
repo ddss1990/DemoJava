@@ -4,8 +4,13 @@ import com.dss.java.tests.databases.utils.DAO;
 import com.dss.java.tests.databases.utils.JDBCUtils;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mysql.jdbc.Driver;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.QueryLoader;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.junit.Test;
 
 import javax.sql.DataSource;
@@ -13,6 +18,8 @@ import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.sql.*;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -478,7 +485,7 @@ public class TestJDBC {
     }
 
     /**
-     *  通过读取配置文件来获得数据库连接对象
+     * 通过读取配置文件来获得数据库连接对象
      */
     private void c3p0ConfigFile() throws SQLException {
         ComboPooledDataSource dataSource = new ComboPooledDataSource("con_pool_chris");
@@ -488,6 +495,7 @@ public class TestJDBC {
 
     /**
      * 通过设置参数的方式来获得数据库连接对象
+     *
      * @throws PropertyVetoException
      */
     private void c3p0Normal() throws PropertyVetoException, SQLException {
@@ -572,4 +580,136 @@ public class TestJDBC {
         }
         System.out.println("connection = " + connection);
     }
+
+    /**
+     * 测试DBUtils
+     */
+    @Test
+    public void testDBUtils() throws SQLException, IOException {
+        // 线程安全的执行SQL的类
+        QueryRunner runner = new QueryRunner();
+        // update
+        //runnerUpdate(runner);
+        // insert
+        //runnerInsert(runner);
+//        methodCompare(runner);
+        queryLoader();
+        // 存储过程和函数
+        procedureAndFunction();
+    }
+
+    /**
+     * 存储过程和函数
+     */
+    private void procedureAndFunction() {
+        Connection connection = null;
+        try {
+            connection = JDBCUtils.getConnection2();
+            String sql = null;
+            CallableStatement statement = connection.prepareCall(sql);
+            // 注册 OUT 参数
+            statement.registerOutParameter(1, Types.VARCHAR);
+            // 设置 IN 参数
+            statement.setString(1, "");
+            // 得到返回值
+            String s = statement.getString(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.releaseConnection(null, connection);
+        }
+    }
+
+    /**
+     * QueryLoader用来加载存放着SQL语句的资源文件
+     */
+    private void queryLoader() throws IOException {
+        QueryLoader queryLoader = QueryLoader.instance();
+        Map<String, String> map = queryLoader.load("/sql.properties");
+        System.out.println("map = " + map);
+        String update_customer = map.get("UPDATE_CUSTOMER");
+        System.out.println("update_customer = " + update_customer);
+    }
+
+    /**
+     * 方法与返回值比较
+     * @param runner
+     * @throws SQLException
+     */
+    private void methodCompare(QueryRunner runner) throws SQLException {
+        ResultSetHandler<Object> handler = new ResultSetHandler<Object>() {
+            @Override
+            public Object handle(ResultSet rs) throws SQLException {
+                return null;
+            }
+        };
+        Connection connection = null;
+        String sql = "";
+        // 方法比较
+        Object insert = runner.insert(connection, sql, handler);
+        int update = runner.update(connection, sql);
+        Object query = runner.query(connection, sql, handler);
+        List<Object> execute = runner.execute(connection, sql, handler);
+        Object[][] params = new Object[0][];
+        int[] batch = runner.batch(connection, sql, params);
+        Object insertBatch = runner.insertBatch(connection, sql, handler, params);
+    }
+
+    /**
+     * 测试QueryRunner的 insert 方法
+     *
+     * @param runner
+     */
+    private void runnerInsert(QueryRunner runner) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtils.getConnection2();
+            String sql = "insert into test_jdbc_users(name, email, birth) values(?, ?, ?)";
+            JDBCUtils.beginTransaction(connection);
+            Object insert = runner.insert(connection, sql, new ResultSetHandler<Object>() {
+                @Override
+                public Object handle(ResultSet rs) throws SQLException {
+                    ResultSetMetaData metaData = rs.getMetaData();
+                    for (int i = 0; i < metaData.getColumnCount(); i++) {
+                        String name = metaData.getColumnName(i + 1);
+                        String label = metaData.getColumnLabel(i + 1);
+                        System.out.print(name + " - " + label + "\t");
+                    }
+                    System.out.println();
+                    Object object = null;
+                    if (rs.next()) {
+                        object = rs.getObject(1);
+                    }
+                    return object;
+                }
+            }, "Ali", "ali@abc.com", new Date(System.currentTimeMillis()));
+            System.out.println("insert = " + insert);
+            JDBCUtils.commitTransaction(connection);
+        } catch (SQLException e) {
+            JDBCUtils.rollbackTransaction(connection);
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.releaseConnection(null, connection);
+        }
+    }
+
+    /**
+     * 测试QueryRunner 的update方法
+     *
+     * @param runner
+     */
+    private void runnerUpdate(QueryRunner runner) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtils.getConnection2();
+            String sql = "update test_jdbc_users set name=? where _id =?";
+            int update = runner.update(connection, sql, "Zhang3", 1005);
+            System.out.println("update = " + update);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.releaseConnection(null, connection);
+        }
+    }
+
 }

@@ -279,7 +279,68 @@ JDBC - Java Database Connectivity, 是一个独立于特定数据库管理系统
                     maxStatements                    // C3P0连接池可以维护的Statement的个数
                     maxStatementsPerConnection       // 每个连接同时使用的Statemetn的对象个数
                 DataSource source = new ComboPooledDataSource("XXX");
-    12 
+    12 DBUtils - Apache
+        commons-dbutils Apache提供的开源的JDBC工具类库
+        QueryRunner - 一个线程安全的用于执行SQL语句的类
+            // 通过无参的构造方法创建对象
+            QueryRunner runner = new QueryRunner();
+            // update 方法可用于 insert, update, delete
+            runner.update(connection, sql, values);
+            // 查询 - QueryRunner 的 query 方法的返回值取决于 ResultSetHandler 参数的 handle 方法的返回值
+            ResultSetHandler handler = new ResultSetHandler() {
+                @Override
+                public Object handle(ResultSet set) {
+                    // 这里的 set 就是查询后的结果集，对结果集进行处理
+                    return set.getObject(1);
+                }
+            };
+            Object obj = runner.query(connection, sql, handler);
+            
+            QueryRunner方法比较
+                参数
+                    Connection connection;
+                    String sql;
+                    ResultSetHandler handler;
+                    Object[][] params; // 行代表有多少个SQL语句，列代表填充的数据
+                    PreparedStatement stmt;
+                    int rows;
+                方法名                 参数                      内部实现                            返回值(ResultSet代表的值)
+                insert()        connection, sql, handler        stmt.executeUpdate();                   Object - stmt.getGeneratedKeys();
+                update()            connection, sql             rows = stmt.executeUpdate();            int - rows
+                query()         connection, sql, handler        rs = this.wrap(stmt.executeQuery());    Object - result = handler.handle(rs);
+                execute()       connection, sql, handler        stmt.execute(),stmt.getMoreResults();   List<Object> - results.add(handler.handle(rs));
+                batch()         connection, sql, params         stmt.addBatch();                        int[] - rows = stmt.executeBatch();
+                insertBatch()   connection, sql, params         stmt.addBatch();ResultSet rs = stmt.getGeneratedKeys();     handler.handle(rs)
+        BeanHandler - 把结果集的第一条记录转为创建BeanHandler对象时传入的Class参数对应的对象
+            // 要想使查询结果直接返回对象，需要在参数中加入 BeanHandler 并指明是那个类的Bean
+            // BeanHandler 是 ResultSetHandler 的子类
+            Student student = runner.query(connection, sql, new BeanHandler(Student.class), values);
+        BeanListHandler(Class.class)
+            - 把结果集转为一个List，该List不为空，但可能没有元素
+        MapHandler()
+            - 返回SQL对应的第一条记录对应的Map对象。 key - 列名(不是别名)  value - 对应的值
+        MapListHandler()
+            - 返回一个结果集为Map的List，元素Map同上
+        ScalarHandler()
+            - 返回具体的查询结果，如果结果集有多条结果，只返回第一行第一列的值
+        QueryLoader - 用来加载存放着SQL语句的资源文件
+            QueryLoader loader = QueryLoader.instance();
+            // 加载文件，需要加一个  /  代表根目录
+            Map<String, String> map = loader.load("/sql.properties");
+    13 函数和存储过程
+        CallableStatement
+            // NAME - 存储过程或函数的名称   如果是存储过程不需要'?='  定义的存储过程或函数有几个参数，后边括号里就有几个问号
+            String sql = "{?= call NAME(?,?)}";
+            CallableStatement statement = connection.prepareCall(sql);
+            // 注册 OUT 参数
+            statement.registerOutParameter(index, type);   // type - Types.XXX
+            // 设定 IN 或 IN OUT 参数，如果参数默认设置为NULL，使用 setNull()方法
+            statement.setXXX(index/label, value);
+            // 执行
+            statement.execute();
+            // 得到返回值
+            statement.getXXX();
+            
             
         
 
