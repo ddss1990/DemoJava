@@ -340,7 +340,13 @@ JDBC - Java Database Connectivity, 是一个独立于特定数据库管理系统
             statement.execute();
             // 得到返回值
             statement.getXXX();
-            
+总结
+    jar包
+        commons-beanutils       BeanUtlils - 通过反射为对象的变量赋值，会同时依赖于 commons-logging
+        commons-dbcp            数据库连接池
+        commons-dbutils         Apache提供的开源的JDBC工具类库，QueryRunner, ResultSetHandler
+        mysql-connector         用于连接MySQL的驱动
+        c3p0                    数据库连接池
             
         
 

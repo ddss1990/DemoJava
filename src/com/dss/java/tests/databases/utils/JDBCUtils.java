@@ -29,7 +29,7 @@ public class JDBCUtils {
      */
     private static ComboPooledDataSource sDataSource;
     static {
-        sDataSource = new ComboPooledDataSource("con_pool_chris");
+        sDataSource = new ComboPooledDataSource("con_pool_mysql");
     }
 
     /**

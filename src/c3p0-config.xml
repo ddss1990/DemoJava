@@ -1,5 +1,5 @@
 <c3p0-config>
-    <named-config name="con_pool_chris">
+    <named-config name="con_pool_mysql">
         <!-- 数据库连接属性 -->
         <property name="user">root</property>
         <property name="password">chris</property>

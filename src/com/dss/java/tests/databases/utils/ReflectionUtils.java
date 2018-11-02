@@ -1,8 +1,6 @@
 package com.dss.java.tests.databases.utils;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 
 /**
  * FileName: ReflectionUtils
@@ -64,6 +62,40 @@ public class ReflectionUtils {
 
         }
         return null;
+    }
+
+    /**
+     * 通过反射, 获得 Class 定义中声明的父类的泛型参数类型
+     * 如: public EmployeeDao extends BaseDao<Employee, String>
+     *
+     * @param <T>
+     * @param clazz
+     * @return
+     */
+    public static <T> Class<T> getSuperClassGenericType(Class clazz) {
+        return getSuperClassGenericType(clazz, 0);
+    }
+
+    /**
+     * 通过反射, 获得 Class 定义中声明的父类的泛型参数类型
+     * 如: public EmployeeDao extends BaseDao<Employee, String>
+     *
+     * @param clazz
+     * @return
+     */
+    private static Class getSuperClassGenericType(Class clazz, int index) {
+        Type superType = clazz.getGenericSuperclass();
+        if (!(superType instanceof ParameterizedType)) {
+            return Object.class;
+        }
+        Type[] types = ((ParameterizedType) superType).getActualTypeArguments();
+        if (index >= types.length || index < 0) {
+            return Object.class;
+        }
+        if (!(types[index] instanceof Class)) {
+            return Object.class;
+        }
+        return (Class) types[index];
     }
 
     public void test() {

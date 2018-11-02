@@ -488,7 +488,7 @@ public class TestJDBC {
      * 通过读取配置文件来获得数据库连接对象
      */
     private void c3p0ConfigFile() throws SQLException {
-        ComboPooledDataSource dataSource = new ComboPooledDataSource("con_pool_chris");
+        ComboPooledDataSource dataSource = new ComboPooledDataSource("con_pool_mysql");
         printDBCPConfig(dataSource);
 
     }
