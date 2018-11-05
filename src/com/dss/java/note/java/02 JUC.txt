@@ -1,0 +1,71 @@
+JUC - java.util.concurrent
+/**
+* 视频时间 : 2016/12/26
+* 学习时间 : 2018/11/5
+*/
+1 volatile & 内存可见性
+    内存可见性 - 当多个线程操作共享数据时，彼此不可见
+        子线程
+            private boolean flag = false;
+            public void run() {
+                // 加一个延时，再去修改变量的值
+                Thread.sleep(200);
+                flag = true;
+            }
+        主线程
+            while (true) {
+                if(getFlag()) {
+                    
+                }
+            }
+        // 理想
+            在主线程通过 getFlag() 方法读取到的数据，是从缓存中读取到的，是修改前的数据，这就说明了多个线程操作共享数据时，彼此是不可见的
+        // 实际情况
+            主线程 getFlag() 方法读到的数据是修改后的数据
+    volatile - 当多个线程操作共享数据时，可以保证内存中的数据可见
+                相较于 synchronized 是一种较为轻量级的同步策略
+    与 synchronized 相比较
+        volatile 不具备互斥性。 synchronized 可同时保证只有一个线程访问数据，而 volatile 可以多个线程同时访问。
+        volatile 不能保证变量的原子性。
+2 原子变量 & CAS算法
+    ++操作
+        实际上分为三步 读 - 改 - 写
+            int i = 10; i++;
+        --> int temp = i;  temp = temp + 1;   i = temp;
+    原子变量 - AtomicInteger
+        1. 内部变量使用 volatile 修饰，保证内存可见性
+        2. CAS算法保证数据的原子性
+    CAS - Compare And Swap
+        硬件对于并发操作共享数据的支持
+        包含三个数
+            内存值 V  内存中的值，有可能被其它线程修改 expectedValue
+            预估值 A  是程序执行前读取到的值(读取的内存值)，有可能在此线程读取之后，其它线程对该值进行了修改 oldValue
+            更新值 B
+            当且仅当内存值等于预估值时，才将更新至赋值给内存值。否则不做任何操作。
+            只有在 expectedValue == oldValue 时，才能说明此值没有被其它线程修改
+3 ConcurrentHashMap - 线程安全的哈希表
+    对于多线程的操作，介于 HashMap 和 HashTable 之间
+    内部采用 锁分段 机制替代 HashTable 的独占锁，底层是用CAS实现的   Collections.synchronizedMap() 底层的实现是通过加同步锁实现的
+    HashMap 和 HashTable 的区别
+        HashMap - 线程不安全
+        HashTable - 线程安全，有锁，会锁住整个表；并发访问HashTables时，由并行转为了串行，一次只能有一个线程访问HashTable。
+                存在一些复合操作(例：若不存在则添加)上的问题
+    ConcurrentHashMap
+        锁分段机制，concurrentLevel 默认16，意思是有16个段(Segment)
+        每个段中默认有16个元素 ？？？？？（这里不理解啥意思）
+    CopyOnWriteArrayList/CopyOnWriteArraySet - 写入并复制
+        添加操作多时，效率低，因为每次添加时都会进行复制，开销非常大。并发迭代操作多时可选择
+
+
+
+
+
+
+
+
+
+
+
+
+
+
