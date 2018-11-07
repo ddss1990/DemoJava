@@ -1,7 +1,9 @@
 package com.dss.java.tests.juc;
 
 import org.junit.Test;
+import org.omg.PortableServer.THREAD_POLICY_ID;
 
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -10,6 +12,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * FileName: TestJUC
@@ -45,6 +48,273 @@ public class TestJUC {
         // 测试生产者消费者
 //        testProducerAndConsumer();
 
+        // 交替打印ABC
+        //testPrintAlternate();
+
+        // 读写锁
+        //testReadWriteLock();
+
+        // 八锁
+/*        Test8Lock test8Lock = new Test8Lock();
+        try {
+            test8Lock.begin();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+
+        // 线程池
+        testThreadPool();
+    }
+
+    /**
+     * 测试线程池
+     */
+    private static void testThreadPool() {
+        // 创建线程池
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        Callable<Integer> callable = new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                for (int i = 0; i < 10; i++) {
+                    System.out.println(Thread.currentThread().getName() + " : " + i);
+                }
+                return null;
+            }
+        };
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 100; i++) {
+                    System.out.println(Thread.currentThread().getName() + " : " + i);
+                }
+            }
+        };
+        // 为线程池分配任务
+        for (int i = 0; i < 10; i++) {
+            //executorService.submit(callable);
+            executorService.submit(runnable);
+        }
+        // 关闭线程池
+        executorService.shutdown();
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
+        scheduledExecutorService.schedule(runnable, 3, TimeUnit.SECONDS);
+        scheduledExecutorService.shutdown();
+    }
+
+    /**
+     * 测试读写锁
+     * 可同时多个线程一起读，但不能一起写，也不能一起读和写
+     */
+    private static void testReadWriteLock() {
+        // 创建读写锁对象
+        ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        // 读锁
+        ReentrantReadWriteLock.ReadLock readLock = readWriteLock.readLock();
+        // 写锁
+        ReentrantReadWriteLock.WriteLock writeLock = readWriteLock.writeLock();
+        int number = 0;
+
+        // 读锁处理
+        try {
+            readLock.lock();
+            System.out.println("number = " + number);
+        } finally {
+            readLock.unlock();
+        }
+
+        // 写锁处理
+        try {
+            writeLock.lock();
+            number = 10;
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
+     * 使用3个线程，每个线程的名字分别是A,B,C，要求按顺序打印ABC 10次
+     */
+    private static void testPrintAlternate() {
+        /*
+        ABCAlternate abc = new ABCAlternate();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 10; i++) {
+                    abc.printA();
+                }
+            }
+        }, "A").start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 10; i++) {
+                    abc.printB();
+                }
+            }
+        }, "B").start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 10; i++) {
+                    abc.printC();
+                    System.out.println();
+                }
+            }
+        }, "C").start();*/
+        ABCThread thread = new ABCThread();
+        Thread a = new Thread(thread, "A");
+        Thread b = new Thread(thread, "B");
+        Thread c = new Thread(thread, "C");
+        a.start();
+        b.start();
+        c.start();
+    }
+
+    /**
+     * 总结
+     * 在线程中控制的效果不好，
+     * 1. 如果先等待，后唤醒，10次循环只执行了1次，也就是第一次循环，原因是进入到等待状态，后续的代码无法执行
+     * 2. 如果先唤醒，后等待，10次循环可全部执行，但是执行结束后程序并未结束运行，可以分析出是有锁还处在等待状态
+     * 而是应该将控制抽离出来，改为使用控制类去控制每个线程的打印及等待和唤醒。
+     */
+    static class ABCThread implements Runnable {
+        private int number = 1;
+        private Thread nextThread;
+        private ReentrantLock mLock = new ReentrantLock();
+        private Condition mConditionA = mLock.newCondition();
+        private Condition mConditionC = mLock.newCondition();
+        private Condition mConditionB = mLock.newCondition();
+
+        public void setNextThread(Thread abcThread) {
+            nextThread = abcThread;
+        }
+
+        @Override
+        public void run() {
+            for (int i = 0; i < 10; i++) {
+                modifyNumber();
+                checkNumber();
+            }
+        }
+
+        private void checkNumber() {
+            if (number == 1) {
+
+            }
+        }
+
+        private void modifyNumber() {
+            try {
+                mLock.lock();
+                if (number == 1) {
+                    System.out.println(Thread.currentThread().getName());
+                    number = 2;
+                    mConditionA.await();
+                    mConditionB.signal();
+                } else if (number == 2) {
+                    System.out.println(Thread.currentThread().getName());
+                    number = 3;
+                    mConditionB.await();
+                    mConditionC.signal();
+                } else if (number == 3) {
+                    System.out.println(Thread.currentThread().getName());
+                    number = 1;
+                    mConditionC.await();
+                    mConditionA.signal();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                mLock.unlock();
+            }
+
+        }
+    }
+
+    /**
+     * 顺序打印 ABC 十次
+     * 此类用来控制线程的轮流打印，所以本身不能设定为线程类
+     */
+    static class ABCAlternate {
+        private int number = 1;
+        ReentrantLock mLock = new ReentrantLock();
+        Condition mConditionA = mLock.newCondition();
+        Condition mConditionB = mLock.newCondition();
+        Condition mConditionC = mLock.newCondition();
+
+        // 控制 A线程 去打印
+        public void printA() {
+            try {
+                // 加锁
+                mLock.lock();
+                // 如果当前还未轮到本线程打印，就先等待
+                if (number != 1) {
+                    try {
+                        mConditionA.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                // 执行本次打印
+                System.out.print(Thread.currentThread().getName());
+                number = 2;
+                // 并唤醒下一线程
+                mConditionB.signal();
+            } finally {
+                // 释放锁
+                mLock.unlock();
+            }
+        }
+
+        // 控制 B线程 去打印
+        public void printB() {
+            try {
+                // 加锁
+                mLock.lock();
+                // 如果当前还未轮到本线程打印，就先等待
+                if (number != 2) {
+                    try {
+                        mConditionB.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                // 执行本次打印
+                System.out.print(Thread.currentThread().getName());
+                number = 3;
+                // 并唤醒下一线程
+                mConditionC.signal();
+            } finally {
+                // 释放锁
+                mLock.unlock();
+            }
+        }
+
+        // 控制 C线程 去打印
+        public void printC() {
+            try {
+                // 加锁
+                mLock.lock();
+                // 如果当前还未轮到本线程打印，就先等待
+                if (number != 3) {
+                    try {
+                        mConditionC.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                // 执行本次打印
+                System.out.print(Thread.currentThread().getName());
+                number = 1;
+                // 并唤醒下一线程
+                mConditionA.signal();
+            } finally {
+                // 释放锁
+                mLock.unlock();
+            }
+        }
     }
 
     /**

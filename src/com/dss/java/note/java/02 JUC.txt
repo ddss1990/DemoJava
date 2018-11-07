@@ -115,6 +115,113 @@ JUC - java.util.concurrent
         await()       -->       wait()
         signal()                notify()
         signalAll()             notifyAll()
+    线程按序交替
+        class Control {
+            int number;
+            ReentrantLock lock = new ReentrantLock();
+            Condition condition1 = lock.newCondition();
+            Condition condition2 = lock.newCondition();
+            Condition condition3 = lock.newCondition();
+            
+            // 线程1执行的方法
+            public void method1() {
+                if (number != 1) {
+                    // 当前轮不到1号执行的时候，对1号进行等待处理
+                    // 进入到阻塞状态下，下边的代码是执行不了的
+                    condition1.await();
+                }
+                // 线程1执行完毕，唤醒线程2
+                number = 2;
+                condition2.signal();
+            }
+            // 线程2执行的方法 
+            public void method2() {
+                if (number != 2) {
+                    // 还没到线程2执行的时候，进入到阻塞状态
+                    condition2.await();
+                }
+                // 线程2执行完毕，唤醒线程3
+                number = 3;
+                condition3.signal();
+            }
+            // 线程3执行的方法
+            public void method3() {
+                if (number != 3) {
+                    // 还没到线程3执行的时候，进入到阻塞状态
+                }
+                // 线程3执行完毕，唤醒线程1
+                number = 1;
+                condition1.signal();
+            }
+        }
+        // 进行线程控制的时候，只需要创建一个线程对象
+        Control control = new Control();
+        // 在不同的线程中，调用分别的方法即可达到线程控制的目的
+        control.method1();   // 在线程的run()方法中调用
+8 ReadWriteLock - 读写锁
+    读没有线程安全问题
+    可以同时读，不能同时写，不能同时又读又写 
+    // 创建读写锁对象，因为 ReadWriteLock 是接口，需要用其实现类
+    ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    // 获得读锁
+    ReentrantReadWriteLock.ReadLock readLock = readWriteLock.readLock();
+    // 获得写锁
+    ReentrantReadWriteLock.WriteLock writeLock = readWriteLock.writeLock();
+    // ReadLock WriteLock 都是 Lock 的子类，加锁释放锁使用 lock() 和 unlock() 方法
+9 线程八锁
+    前提
+        class Number {
+            public [static] synchronized void getOne() {  System.out.println("one");  }
+            public synchronized void getTwo() {  System.out.println("Two");  }
+            public void getThree() {  System.out.println("Three");  }
+        }
+    情况
+        1. 两个普通同步方法，一个Number对象，两个线程
+            one  two
+        2. 两个普通同步方法，方法1加延时1秒，一个Number对象，两个线程
+            one two
+        // 之后的方法1都有sleep
+        3. 两个普通同步方法，一个普通方法，一个Number对象，三个线程
+            three one two
+        4. 两个普通同步方法，两个Number对象，两个线程
+            two one
+        5. 一个静态同步方法，一个同步方法，两个线程
+            two one
+        6. 两个静态同步方法，两个线程
+            one two
+        7. 一个静态同步方法，一个非静态同步方法，两个对象，两个线程
+            two one
+        8. 两个静态同步方法，两个对象，两个线程
+            one two
+    总结
+        1. 非静态同步方法的锁为 this , 静态同步方法的锁为 Number.class
+        2. 针对同一个锁，在同一时刻，只能有一个线程持有该锁
+10 线程池
+    提供了一个线程队列，队列中保存着所有等待状态的队列，避免了创建与销毁的额外开销，提高了响应速度
+    核心接口 - Executor  java.util.concurrent     负责线程的使用和调度的根接口
+        |--  ExecutorService  线程池的主要接口
+            |--  ThreadPoolExecutor  线程池的实现类
+            |--  ScheduledExecutorService  子接口，负责线程的调度
+                |-- ScheduledThreadPoolExecutor  实现类，继承了 ThreadPoolExecutor ，实现了 ScheduledExecutorService 既有线程池的功能，又可以进行线程的调度
+    ExecutorService
+        工具类 Executors
+            Executors.newCachedThreadPool()             // 缓存线程池，线程池的数量不固定，根据需求，自动更改数量
+            Executors.newFixedThreadPool(int)           // 固定大小的线程池
+            Executors.newSingleThreadExecutor()         // 单独的线程池，内只有一个线程，预设定适用于大部分的情况
+            newScheduledThreadPool()                    // 固定大小的线程池，可以延迟或定时的执行任务
+        ExecutorService executor;
+        // 为线程池分配任务
+        executor.submit(Runnable/Callable);
+        // 关闭线程池
+        executor.shutdown();
+    线程调度
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
+        // 调度执行，也就是延时执行
+        scheduledExecutorService.schedule(Runnable/Callable, long, TimeUnit)
+            arg2 - long
+            arg3 - 时间单位，例如 TimeUnit.SECODNS
+        scheduledExecutorService.shutdown();
+11 
 
 
 
