@@ -55,7 +55,66 @@ JUC - java.util.concurrent
         每个段中默认有16个元素 ？？？？？（这里不理解啥意思）
     CopyOnWriteArrayList/CopyOnWriteArraySet - 写入并复制
         添加操作多时，效率低，因为每次添加时都会进行复制，开销非常大。并发迭代操作多时可选择
-
+4 闭锁 CountDownLatch
+    同步辅助类，在完成一组正在其他线程中执行的操作之前，允许一个或多个线程一直在等待状态。
+    简而言之：在完成某些运算时，只有当其他线程的运算全部完成时，当前运算才继续执行。
+      // 控制线程中
+        // 需要控制多少个线程，N的值就是多少
+        CountDownLatch latch = new CountDownLatch(N);
+        // 线程进行等待，等待其它线程执行完成，再执行
+        latch.await();
+      // 被控制线程中
+        // 当一个线程执行完毕，就将被控制线程数减去1个
+        // 当所有的线程执行完毕，N的值是0
+        latch.countDown();
+5 创建线程的方式3 - 实现Callable接口
+    创建线程的方式一共有四种
+        1. Thread
+        2. Runnable
+        3. Callable
+        4. 线程池
+    // 定义
+    class DemoThread implements Callable<Integer> {
+        @Override
+        public Integer call() throws Exception {
+            
+        }
+    }
+    // 使用，需要 FutureTask 实现类的支持，用于接收结果。   FutureTask 是 Future 接口的实现类
+    DemoThread demo = new DemoThread();
+    FutureTask task = new FutureTask<>(demo);
+    // 执行Callable线程
+    new Thread(task).start();
+    // 获得执行结果
+    // 执行此语句，主线程会进入到阻塞状态，一直阻塞到Callable线程执行完毕，效果等同于闭锁
+    task.get();
+    
+    与Runnable的区别
+        1. 允许泛型
+        2. 有返回值，返回值就是泛型类型
+        3. 可抛出异常
+6 同步锁 - Lock
+    用于解决多线程安全的问题的方式有三种
+        1. 同步代码块 - 隐式锁
+        2. 同步方法   - 隐式锁
+        3. 同步锁     - 显式锁
+    Lock lock = new ReentrantLock();
+    lock.lock()      // 上锁
+    lock.unlock()    // 释放锁，锁必须要释放
+    生产者消费者案例
+        生产者生产过快，消费者来不及接受，可能会造成数据丢失的情况
+        消费者消费过快，生产者来不及生产，可能会出现重复的数据或错误的数据
+        需要在当产品不足时，进行等待(this.wait())，等产品补货完成时，要进行唤醒(this.notifyAll())
+            这种方式有可能会造成一方执行完毕，另一方进入等待状态，程序不能结束
+        虚假唤醒
+            wait()应该使用在循环(while)中，这样才能避免虚假唤醒
+7 Condition 线程通信
+    Condition接口描述了可能与锁有关联的条件变量。
+    Condition condition = lock.newCondition();      // 需要通过锁来获取Condition对象
+    Condition 与 Object 中关于锁方法的对应关系
+        await()       -->       wait()
+        signal()                notify()
+        signalAll()             notifyAll()
 
 
 

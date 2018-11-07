@@ -4,10 +4,12 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * FileName: TestJUC
@@ -19,32 +21,105 @@ public class TestJUC {
 
     public static void main(String[] args) {
 
-        /**
-         * 测试 volatile 和 可见性
 
-         // 创建一个子线程，并启动
-         MyThread myThread = new MyThread();
-         Thread thread = new Thread(myThread);
-         //thread.setName("Sub");
-         thread.start();
+        // 测试 volatile 和 可见性
+        //testVolatile();
 
-         while (true) {
-         // 如果子线程有修改flag，就打印
-         if (myThread.getFlag()) {
-         //            if (myThread.flag) {
-         System.out.println("---------------");
-         break;
-         }
-         }
-         */
         /**
          * 测试 Atomic
          * 使用 Atomic 修饰的变量，效率要高于 synchronized 和 volatile 同时修饰的变量
          */
-        AtomicThread at = new AtomicThread();
+
+/*        AtomicThread at = new AtomicThread();
         for (int i = 0; i < 10; i++) {
             new Thread(at).start();
+        }*/
+
+
+        // 测速闭锁 - CountDownLatch
+        //testCountDownLatch();
+
+        // 测试创建线程的方式之三 - Callable
+        //testCallable();
+
+        // 测试生产者消费者
+//        testProducerAndConsumer();
+
+    }
+
+    /**
+     * 生产者 - 消费者
+     */
+    private static void testProducerAndConsumer() {
+        // 获得锁 - Lock/
+        // 功能类似于同步代码块，在需要同步的代码前加锁，代码后释放锁来达到同步的作用
+        ReentrantLock reentrantLock = new ReentrantLock();
+        // 加锁
+        reentrantLock.lock();
+        // 释放锁
+        reentrantLock.unlock();
+        // 通过锁获得Condition，用于线程通信，对线程进行等待和唤醒操作
+        Condition condition = reentrantLock.newCondition();
+        try {
+            // 类似于 Object 的 wait() 方法
+            condition.await();
+            // 类似于 Object 的 notify() 方法
+            condition.signal();
+            // 类似于 Object 的 notifyAll() 方法
+            condition.signalAll();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+
+        // 为了避免虚假唤醒，应将 wait() 和 await() 方法放在循环中
+    }
+
+    /**
+     * 创建线程的方式之三 - Callable
+     */
+    private static void testCallable() {
+
+        DemoCallable demoCallable = new DemoCallable();
+        // 定义一个FutureTask用于接收结果
+        FutureTask<Integer> futureTask = new FutureTask<>(demoCallable);
+        // 执行子线程
+        new Thread(futureTask, "DemoCallable").start();
+
+        Integer sum = null;
+        try {
+            // 获得Callable的执行结果
+            // 会等待子线程执行完毕，才会执行这里，也相当于闭锁
+            // 可以在主线程中与子线程中，同时进行计算，在结束的时候，通过get()方法获得子线程的结果，再与主线程的配合进行后续操作
+            sum = futureTask.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        System.out.println("sum = " + sum);
+    }
+
+    /**
+     * 测试CountDownLatch - 闭锁
+     * 计算多线程执行时间
+     */
+    private static void testCountDownLatch() {
+        // 控制多少个线程，参数就传入多少
+        CountDownLatch countDownLatch = new CountDownLatch(5);
+        LatchThread latchThread = new LatchThread(countDownLatch);
+        // 计算多线程执行时间
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 5; i++) {
+            new Thread(latchThread).start();
+        }
+        try {
+            // 主线程需要进入等待状态，等待其它线程执行完再执行
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("闭锁耗时: " + (end - start));
     }
 
     /**
@@ -52,18 +127,19 @@ public class TestJUC {
      * 应该出现的情况：在子线程中修改了flag，但是由于是延时修改的， 所以当主线程通过getFlag()方法读取到缓存中时应是修改前的结果，应该只打印出子线程中的内容
      * 实际效果：无论是通过@Test还是main()方法中操作的结果都会将子线程和主线程的结果打印，所以不知道是JDK的问题还是其它问题
      */
-    @Test
-    public void testVolatile() {
+    public static void testVolatile() {
         // 创建一个子线程，并启动
         MyThread myThread = new MyThread();
         Thread thread = new Thread(myThread);
-        thread.setName("Sub");
+        //thread.setName("Sub");
         thread.start();
 
         while (true) {
             // 如果子线程有修改flag，就打印
             if (myThread.getFlag()) {
+//            if (myThread.flag) {
                 System.out.println("---------------");
+                break;
             }
         }
     }
@@ -92,10 +168,67 @@ public class TestJUC {
     public void testConcurrentHashMap() {
         // 传统方法创建一个并发的HashMap
         HashMap<String, Object> map = new HashMap<>();
+        Hashtable<String, Object> hashTable = new Hashtable<>();
         Map<String, Object> synchronizedMap = Collections.synchronizedMap(map);
         //
         ConcurrentHashMap<String, Object> concurrentHashMap = new ConcurrentHashMap<>();
+//        concurrentHashMap.put()
 //        CopyOnWriteArraySet
+    }
+
+    /**
+     * 使用 Callable 的方式来实现线程
+     * 与Runnable不同点
+     * 1. 有返回值，返回值是定义的泛型
+     * 2. 可以抛出异常
+     */
+    static class DemoCallable implements Callable<Integer> {
+
+        @Override
+        public Integer call() throws Exception {
+            int sum = 0;
+            for (int i = 0; i < 10000; i++) {
+                sum += i;
+            }
+            System.out.println(Thread.currentThread().getName());
+            return sum;
+        }
+    }
+
+    /**
+     * 测试闭锁
+     */
+    static class LatchThread implements Runnable {
+        //
+        private CountDownLatch mLatch;
+
+        public LatchThread(CountDownLatch latch) {
+            mLatch = latch;
+        }
+
+        @Override
+        public void run() {
+            // 做一些耗时操作
+            try {
+                for (int i = 0; i < 10000; i++) {
+                    if (i % 400 == 0) {
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } finally {
+                // 加上同步，避免并发操作时同时操作
+                synchronized (this) {
+                    // 当线程执行结束，对数量进行减少
+                    // 最好放在finally中，因为是不管发生什么异常，当线程结束时，此块代码必须执行
+                    mLatch.countDown();
+                }
+            }
+
+        }
     }
 
     /**
