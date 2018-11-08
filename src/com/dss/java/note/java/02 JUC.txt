@@ -51,7 +51,7 @@ JUC - java.util.concurrent
         HashTable - 线程安全，有锁，会锁住整个表；并发访问HashTables时，由并行转为了串行，一次只能有一个线程访问HashTable。
                 存在一些复合操作(例：若不存在则添加)上的问题
     ConcurrentHashMap
-        锁分段机制，concurrentLevel 默认16，意思是有16个段(Segment)
+        锁分段机制，concurrencyLevel 默认16，意思是有16个段(Segment)，支持16个线程并发写，不可扩容
         每个段中默认有16个元素 ？？？？？（这里不理解啥意思）
     CopyOnWriteArrayList/CopyOnWriteArraySet - 写入并复制
         添加操作多时，效率低，因为每次添加时都会进行复制，开销非常大。并发迭代操作多时可选择
@@ -221,17 +221,51 @@ JUC - java.util.concurrent
             arg2 - long
             arg3 - 时间单位，例如 TimeUnit.SECODNS
         scheduledExecutorService.shutdown();
-11 
+11 ForkJoinPool 分支/合并框架 工作窃取
+    Fork/Join 框架
+        将一个大任务，进行拆分(fork)成若干个小任务(拆到不可再拆时)，再将一个个小任务运算的结果进行汇总(join)
+    工作窃取模式
+        将小任务加入到线程队列中，有的线程队列可能发生阻塞，有的没有，就会出现有的线程处于空闲状态。
+        从一个随机的线程队列中(前提是队列中有任务)偷一个并把它放在自己的队列中。
+    RecusiveTask            // 有返回值
+    RecusiveAction          // 无返回值
+    如果想实现 Fork/Join 框架，需要继承上边的两个类之一
+        class TestForkJoin extends RecusiveTask<Object> {
+            @Override
+            public Object compute() {
+                // 在这里进行任务的拆分和合并
+                // 拆分需要再次创建本类对象，有点像递归
+                TestForkJoin left = new TestForkJoin();
+                left.fork();            // 向左拆分
+                TestForkJoin right = new TestForkJoin();
+                right.fork();           // 向右拆分
+                
+                // 汇总
+                return left.join() + right.join();
+            }
+        }
+    // Fork/Join 框架的类的执行，需要依赖于一个 ForkJoinPool
+        ForkJoinPool pool = new ForkJoinPool();
+        // 这里一定要使用 TestForkJoin 的父类 ForkJoinTask
+        ForkJoinTask<Object> task = new TestForkJoin();
+        // 执行拆分与汇总
+        pool.invoke(task);
 
-
-
-
-
-
-
-
-
-
-
-
-
+    ps. JAVA8一些使用
+    // 计算程序执行时间
+        // 记录此刻的时间
+        Instant begin = Instant.now();
+        Instant end = Instant.now();
+        Duration.between(begin, end).toMillis();        
+    // 求和
+        long sum = LongStream.rangeClosed(start, end).parallel().reduce(0L, Long::sum);
+        
+        
+HashMap ConcurrentHashMap
+    ConcurrentHashMap
+        一个 ConcurrentHashMap 默认有16个 Segment， 并且不可扩容。Segment 内部是由 数组+链表 组成的。
+        loadFactor = 0.75;    阈值 1.5，插入的元素个数超过阈值时才会触发扩容，此负载因子是为Segmeng内部用的
+        concurrencyLevel = 16;  // 默认
+        sshift = 4;  ssize = 16;
+        segmentShift = 28;  segmentMark = 15;
+        

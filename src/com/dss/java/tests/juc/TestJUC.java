@@ -4,10 +4,7 @@ import org.junit.Test;
 import org.omg.PortableServer.THREAD_POLICY_ID;
 
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -63,7 +60,33 @@ public class TestJUC {
         }*/
 
         // 线程池
-        testThreadPool();
+//        testThreadPool();
+
+        // 测试ForkJoin 拆分与合并任务
+        TestForkJoin forkJoin = new TestForkJoin();
+        forkJoin.start();
+
+        testMap();
+    }
+
+    /**
+     *  HashMap & ConcurretnHashMap
+     */
+    private static void testMap() {
+        HashMap<String, Object> hashMap = new HashMap();
+        Object put = hashMap.put("", "");
+        Object o = hashMap.get("");
+        Set<Map.Entry<String, Object>> set = hashMap.entrySet();
+        for (Map.Entry<String, Object> entry : set) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+        }
+        Iterator iterator = set.iterator();
+
+        ConcurrentHashMap<String, Object> concurrentHashMap = new ConcurrentHashMap<>();
+        concurrentHashMap.put("", "");
+        Set<Map.Entry<String, Object>> entries = concurrentHashMap.entrySet();
+
     }
 
     /**
