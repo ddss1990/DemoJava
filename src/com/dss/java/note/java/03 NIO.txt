@@ -1,0 +1,80 @@
+/** 
+* NIO
+* 视频时间 2016/12/21
+* 学习时间 2018/11/9
+*/ 
+1 NIO 简介
+    NIO - New IO
+    1.4引入的，用于替代标准的IO
+2 NIO 与 IO 的区别
+    NIO 面向缓冲区  非阻塞IO  选择器
+    IO    面向流     阻塞IO     无
+    IO - 流是单向的
+    NIO - 缓冲区双向的
+    IO中，在程序与文件之间，通过建立通道进行数据的传输，通道可以类比成水管，只能是单向的，要么是输入流，要么是输出流
+    NIO中，程序与文件之间，也是通过通道建立连接的，这里的通道类似于火车道，数据的传输是双向的，是通过操作缓冲区来进行数据的传输的
+3 缓冲区 - Buffer   通道 - Channel
+    通道表示程序到IO设备(文件、套接字)的连接，缓冲区用来容纳数据，操作缓冲区对数据进行处理
+    通道负责传输，缓冲区负责存储。
+    缓冲区
+        在NIO中，负责数据的存取。缓冲区就是数组。用于存储不同数据类型的数据。
+        ByteBuffer, CharBuffer, ShortBuffer, IntBuffer, LongBuffer, FloatBuffer, DoubleBuffer
+          // 核心方法
+            通过 allocate() 方法获得指定大小的缓冲区
+            put();      // 存入数据到缓冲区中
+            get();      // 获取缓冲区中的数据
+          // 核心属性
+            private int mark = -1;      // 标记，表示记录当前position的位置，可通过 reset() 恢复到makr位置
+            private int position = 0;   // 位置，缓冲区中正在操作数据的位置
+            private int limit;          // 界限，表示缓冲区中可以操作数据的大小，limit后的数据不能进行读写
+            private int capacity;       // 容量，缓冲区中最大存储数据的容量，不能修改
+            mark <= position <= limit <= capacity
+          // 其它方法
+            flip();     // 切换读取数据模式
+            rewind();   // 可重复读数据
+            clear();    // 清空缓冲区，数据并未被清空，数据只是处于被遗忘状态
+            hasRemaining();     // 判断缓冲区中是否还有剩余的数据
+            remaining();        // 获取缓冲区中可操作的数量
+    直接缓冲区与非直接缓冲区
+        非直接缓冲区
+            通过 allocate() 方法分配缓冲区，将缓冲区建立在JVM内存中
+        直接缓冲区 - 内存映射文件
+            allocateDirect() 将缓冲区建立在操作系统的物理内存中，可以提高效率，但是不易控制      
+            // 只支持 ByteBuffer
+            MappedByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, channel.size());    // 和通过 allocateDirect() 方式一样获取的都是直接缓存区
+
+            有可能会出现文件已经复制完成，但是程序并没有释放对物理内存的映射，这是由于垃圾回收不及时造成的。
+            最好在直接缓冲区能在程序性能方面带来明显好处时使用。
+        isDirect()      // 判断是否是直接缓冲区
+    管道
+        用于源节点与目标节点的连接。在NIO中负责缓冲区中数据的传输，本身不存储数据，需要配合缓冲区一起使用。
+        DMA - Direct Memory Access
+        Channel - 完全独立的处理器，用于IO
+        主要实现类  java.nio.channels.Channel
+            |-- FileChannel
+            |-- SocketChannel
+            |-- ServerSocketChannel
+            |-- DatagramChannel
+        获取通道
+          1. 方法1 getChanel()    支持的类
+            本地IO
+                FileInputStream/FileOutputStream
+                RandomAccessFile
+            网络IO
+                Socket
+                ServerSocket
+                DatagramSocket
+          2. 方法2 静态方法 open()
+            FileChannel channel = FileChannel.open(Path, Options);
+              Options
+                StandardOpenOption.READ     // 读
+                StandardOpenOption.WRITE    // 写
+                StandardOpenOption.CREATE   // 文件不存在就创建，存在就覆盖
+                StandardOpenOption.CREATE_NEW   // 不存在就创建，存在就报错
+          3. 方法3 Files 的工具类 newByteChannel()
+      // 内存映射文件
+      
+4 文件通道
+5 NIO 的非阻塞式网络通信
+6 管道 - Pipe
+7 NIO2
