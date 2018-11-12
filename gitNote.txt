@@ -43,7 +43,8 @@ vim .gitignore
 // gitk中文乱码
   git config --global gui.encoding utf-8
 	
-	
+// git pull --rebase 出现错误
+Git config --global http.postBuffer 524288000
 
 
 

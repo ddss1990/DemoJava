@@ -341,6 +341,7 @@ public class TestNIO {
         System.out.println("encodeByteBuffer = " + encodeByteBuffer.hasRemaining());
         printBaseMessage(encodeByteBuffer, "flip");
         // 这里使用 utfDecoder 就会报错，使用 gbkDecoder 就没问题
+        // java.nio.charset.MalformedInputException: Input length = 1
         CharBuffer utf_decode3 = utfDecoder.decode(encodeByteBuffer);
         System.out.println("utf_decode3 = " + utf_decode3);
     }

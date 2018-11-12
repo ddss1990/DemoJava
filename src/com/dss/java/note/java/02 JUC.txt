@@ -148,13 +148,14 @@ JUC - java.util.concurrent
             public void method3() {
                 if (number != 3) {
                     // 还没到线程3执行的时候，进入到阻塞状态
+                    condition3.await();
                 }
                 // 线程3执行完毕，唤醒线程1
                 number = 1;
                 condition1.signal();
             }
         }
-        // 进行线程控制的时候，只需要创建一个线程对象
+        // 进行线程控制的时候，只需要创建一个控制对象
         Control control = new Control();
         // 在不同的线程中，调用分别的方法即可达到线程控制的目的
         control.method1();   // 在线程的run()方法中调用
@@ -197,7 +198,7 @@ JUC - java.util.concurrent
         1. 非静态同步方法的锁为 this , 静态同步方法的锁为 Number.class
         2. 针对同一个锁，在同一时刻，只能有一个线程持有该锁
 10 线程池
-    提供了一个线程队列，队列中保存着所有等待状态的队列，避免了创建与销毁的额外开销，提高了响应速度
+    提供了一个线程队列，队列中保存着所有等待状态的线程，避免了创建与销毁的额外开销，提高了响应速度
     核心接口 - Executor  java.util.concurrent     负责线程的使用和调度的根接口
         |--  ExecutorService  线程池的主要接口
             |--  ThreadPoolExecutor  线程池的实现类

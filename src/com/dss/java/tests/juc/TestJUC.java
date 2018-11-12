@@ -23,7 +23,7 @@ public class TestJUC {
 
 
         // 测试 volatile 和 可见性
-        //testVolatile();
+        testVolatile();
 
         /**
          * 测试 Atomic
@@ -64,9 +64,9 @@ public class TestJUC {
 
         // 测试ForkJoin 拆分与合并任务
         TestForkJoin forkJoin = new TestForkJoin();
-        forkJoin.start();
+        //forkJoin.start();
 
-        testMap();
+        //testMap();
     }
 
     /**
@@ -612,7 +612,8 @@ class MyThread implements Runnable {
 
         try {
             // 加个延迟
-            Thread.sleep(2000);
+            Thread.sleep(10000);
+            System.out.println(Thread.currentThread().getName() + " flag = " + flag);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

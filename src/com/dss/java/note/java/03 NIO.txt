@@ -111,3 +111,42 @@
 5 NIO 的非阻塞式网络通信
 6 管道 - Pipe
 7 NIO2
+
+
+问题
+1.
+    FileChannel inChannel = FileChannel.open(inPath, StandardOpenOption.READ);
+    FileChannel outChannel = FileChannel.open(outPath, StandardOpenOption.WRITE, StandardOpenOption.READ, StandardOpenOption.CREATE_NEW);
+    MappedByteBuffer inBuffer = inChannel.map(FileChannel.MapMode.READ_ONLY, 0, inChannel.size());
+    // outBuffer 使用 inChannel.size() 出现错误 ：OutOfMemoryError: Map failed
+    /**
+    * API中显示，size大小不要超过 Integer.MAX_VALUE(0x7fffffff/2147483647)
+    * 但是实测发现，size大小是 1111244363 ，出现了错误
+    */
+    MappedByteBuffer outBuffer = outChannel.map(FileChannel.MapMode.READ_WRITE, 0, inChannel.size());
+    
+    // 这里使用 inBuffer.limit() 也会提示 堆内存超出
+    byte[] dst = new byte[inBuffer.limit()];
+    
+2. 
+    // 字符集
+    Charset gbk = Charset.forName("gbk");
+    CharsetEncoder gbkEncoder = gbk.newEncoder();       // 编码器
+    CharsetDecoder gbkDecoder = gbk.newDecoder();       // 解码器
+    
+    String s = "";
+    CharBuffer charBuffer = CharBuffer.allocate(1024);  // 缓冲区
+    charBuffer.put(s);
+    charBuffer.flip();                                  // 切换模式
+    ByteBuffer gbkEncode = gbkEncoder.encode(charBuffer);   // 编码
+    
+    CharBuffer decode2 = gbkDecoder.decode(gbkEncode);      // 使用相同字符集进行解码，可以正常输出
+    // 不同字符集
+    Charset utf = Charset.forName("utf-8");
+    CharBuffer utf_decode1 = utf.decode(gbkEncode);         // 可以解码，出现乱码
+    // 报错，java.nio.charset.MalformedInputException: Input length = 1
+    CharsetDecoder utfDecoder = utf.newDecoder();
+    CharBuffer utf_decode3 = utfDecoder.decode(gbkEncode);
+    结果
+        使用相同字符集可以正常解码；
+        使用不同字符集时，直接用字符集解码，出现乱码；使用字符集的编码集进行解码，出现报错：java.nio.charset.MalformedInputException: Input length = 1
