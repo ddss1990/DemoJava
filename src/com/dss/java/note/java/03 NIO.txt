@@ -72,8 +72,41 @@
                 StandardOpenOption.CREATE   // 文件不存在就创建，存在就覆盖
                 StandardOpenOption.CREATE_NEW   // 不存在就创建，存在就报错
           3. 方法3 Files 的工具类 newByteChannel()
-      // 内存映射文件
-      
+        // 搭配缓冲区使用 - 非直接缓冲区
+            while(inChannel.read(buffer) != -1) {   // 向缓冲区写入数据
+                buffer.flip();                      // 转成读取模式
+                outChannel.write(buffer);           // 从缓冲区读取数据
+                buffer.clear();                     // 清空缓冲区
+            }
+        // 搭配缓冲区使用 - 直接缓冲区(硬盘映射文件)
+            FileChannel inChannel = FileChannel.open(inPath, StandardOpenOption.READ);
+            FileChannel outChannel = FileChannel.open(outPath, StandardOpenOption.WRITE, StandardOpenOption.READ, StandardOpenOption.CREATE_NEW);
+            MappedByteBuffer inBuffer = inChannel.map(FileChannel.MapMode.READ_ONLY, 0, inChannel.size());
+            // outBuffer 的 size 设置可能有大小限制，因为使用 inChannel.size() 会出错: OutOfMemoryError: Map failed
+            MappedByteBuffer outBuffer = outChannel.map(FileChannel.MapMode.READ_WRITE, 0, inChannel.size());
+            byte[] dst = new byte[inBuffer.limit()];
+            inBuffer.get(dst);
+            outBuffer.put(dst);
+      通道之间的数据传输
+        transferFrom()
+        transferTo()        
+        // 两个方法使用一个即可
+        inChannel.transferTo(0, inChannel.size(), outChannel);
+        outChannel.transferFrom(inChannel, 0, inChannel.size());
+      分散(Scatter)与聚集(Gather)
+        分散读取 - Scattering Reads 将通道中的数据分散到多个缓冲区中，依次将缓冲区填满
+        聚集写入 - Gathering Writes 将多个缓冲区的数据聚集到通道中，按照读取到缓冲区的顺序写入到通道
+      字符集 - Charset
+        编码 : 字符串转为字节数组的过程
+        解码 : 字节数组转为字符串的过程
+        SortedMap<String, Charset> charsets = Charset.availableCharsets();      // 所有的可用字符集
+        Charset gbk = Charset.forName("gbk");           // 获得指定的字符集
+        CharsetEncoder gbkEncoder = gbk.newEncoder();   // 获得对应的编码器
+        CharsetDecoder gbkDecoder = gbk.newDecoder();   // 获得对应的解码器
+        gbkEncoder.encode(CharBuffer);                  // 编码
+        gbk.encode(String);                             // 编码
+        gbkDecoder.decode(ByteBuffer);                  // 解码
+        gbk.decode(ByteBuffer);                         // 解码
 4 文件通道
 5 NIO 的非阻塞式网络通信
 6 管道 - Pipe
