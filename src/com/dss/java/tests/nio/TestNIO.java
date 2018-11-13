@@ -3,6 +3,9 @@ package com.dss.java.tests.nio;
 import org.junit.Test;
 
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -77,7 +80,7 @@ public class TestNIO {
      * @param buffer
      * @param msg
      */
-    private void printBaseMessage(ByteBuffer buffer, String msg) {
+    public void printBaseMessage(ByteBuffer buffer, String msg) {
         int position = buffer.position();
         int limit = buffer.limit();
         int capacity = buffer.capacity();
@@ -337,11 +340,13 @@ public class TestNIO {
         encodeByteBuffer.flip();
         CharBuffer gbk_decode2 = gbkDecoder.decode(encodeByteBuffer);
         System.out.println("gbk_decode2 = " + gbk_decode2);
+        printBaseMessage(encodeByteBuffer, "Before flip");
         encodeByteBuffer.flip();
         System.out.println("encodeByteBuffer = " + encodeByteBuffer.hasRemaining());
-        printBaseMessage(encodeByteBuffer, "flip");
         // 这里使用 utfDecoder 就会报错，使用 gbkDecoder 就没问题
         // java.nio.charset.MalformedInputException: Input length = 1
+        //[position = 0, limit = 6, capacity = 6]
+        printBaseMessage(encodeByteBuffer, "flip");
         CharBuffer utf_decode3 = utfDecoder.decode(encodeByteBuffer);
         System.out.println("utf_decode3 = " + utf_decode3);
     }

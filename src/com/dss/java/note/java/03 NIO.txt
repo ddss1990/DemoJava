@@ -46,72 +46,177 @@
             有可能会出现文件已经复制完成，但是程序并没有释放对物理内存的映射，这是由于垃圾回收不及时造成的。
             最好在直接缓冲区能在程序性能方面带来明显好处时使用。
         isDirect()      // 判断是否是直接缓冲区
-    管道
-        用于源节点与目标节点的连接。在NIO中负责缓冲区中数据的传输，本身不存储数据，需要配合缓冲区一起使用。
-        DMA - Direct Memory Access
-        Channel - 完全独立的处理器，用于IO
-        主要实现类  java.nio.channels.Channel
-            |-- FileChannel
-            |-- SocketChannel
-            |-- ServerSocketChannel
-            |-- DatagramChannel
-        获取通道
-          1. 方法1 getChanel()    支持的类
-            本地IO
-                FileInputStream/FileOutputStream
-                RandomAccessFile
-            网络IO
-                Socket
-                ServerSocket
-                DatagramSocket
-          2. 方法2 静态方法 open()
-            FileChannel channel = FileChannel.open(Path, Options);
-              Options
-                StandardOpenOption.READ     // 读
-                StandardOpenOption.WRITE    // 写
-                StandardOpenOption.CREATE   // 文件不存在就创建，存在就覆盖
-                StandardOpenOption.CREATE_NEW   // 不存在就创建，存在就报错
-          3. 方法3 Files 的工具类 newByteChannel()
-        // 搭配缓冲区使用 - 非直接缓冲区
-            while(inChannel.read(buffer) != -1) {   // 向缓冲区写入数据
-                buffer.flip();                      // 转成读取模式
-                outChannel.write(buffer);           // 从缓冲区读取数据
-                buffer.clear();                     // 清空缓冲区
-            }
-        // 搭配缓冲区使用 - 直接缓冲区(硬盘映射文件)
-            FileChannel inChannel = FileChannel.open(inPath, StandardOpenOption.READ);
-            FileChannel outChannel = FileChannel.open(outPath, StandardOpenOption.WRITE, StandardOpenOption.READ, StandardOpenOption.CREATE_NEW);
-            MappedByteBuffer inBuffer = inChannel.map(FileChannel.MapMode.READ_ONLY, 0, inChannel.size());
-            // outBuffer 的 size 设置可能有大小限制，因为使用 inChannel.size() 会出错: OutOfMemoryError: Map failed
-            MappedByteBuffer outBuffer = outChannel.map(FileChannel.MapMode.READ_WRITE, 0, inChannel.size());
-            byte[] dst = new byte[inBuffer.limit()];
-            inBuffer.get(dst);
-            outBuffer.put(dst);
-      通道之间的数据传输
-        transferFrom()
-        transferTo()        
-        // 两个方法使用一个即可
-        inChannel.transferTo(0, inChannel.size(), outChannel);
-        outChannel.transferFrom(inChannel, 0, inChannel.size());
-      分散(Scatter)与聚集(Gather)
-        分散读取 - Scattering Reads 将通道中的数据分散到多个缓冲区中，依次将缓冲区填满
-        聚集写入 - Gathering Writes 将多个缓冲区的数据聚集到通道中，按照读取到缓冲区的顺序写入到通道
-      字符集 - Charset
-        编码 : 字符串转为字节数组的过程
-        解码 : 字节数组转为字符串的过程
-        SortedMap<String, Charset> charsets = Charset.availableCharsets();      // 所有的可用字符集
-        Charset gbk = Charset.forName("gbk");           // 获得指定的字符集
-        CharsetEncoder gbkEncoder = gbk.newEncoder();   // 获得对应的编码器
-        CharsetDecoder gbkDecoder = gbk.newDecoder();   // 获得对应的解码器
-        gbkEncoder.encode(CharBuffer);                  // 编码
-        gbk.encode(String);                             // 编码
-        gbkDecoder.decode(ByteBuffer);                  // 解码
-        gbk.decode(ByteBuffer);                         // 解码
 4 文件通道
+    用于源节点与目标节点的连接。在NIO中负责缓冲区中数据的传输，本身不存储数据，需要配合缓冲区一起使用。
+    DMA - Direct Memory Access
+    Channel - 完全独立的处理器，用于IO
+    主要实现类  java.nio.channels.Channel
+        |-- FileChannel
+        |-- SocketChannel
+        |-- ServerSocketChannel
+        |-- DatagramChannel
+    获取通道
+      1. 方法1 getChanel()    支持的类
+        本地IO
+            FileInputStream/FileOutputStream
+            RandomAccessFile
+        网络IO
+            Socket
+            ServerSocket
+            DatagramSocket
+      2. 方法2 静态方法 open()
+        FileChannel channel = FileChannel.open(Path, Options);
+          Options
+            StandardOpenOption.READ     // 读
+            StandardOpenOption.WRITE    // 写
+            StandardOpenOption.CREATE   // 文件不存在就创建，存在就覆盖
+            StandardOpenOption.CREATE_NEW   // 不存在就创建，存在就报错
+      3. 方法3 Files 的工具类 newByteChannel()
+    // 搭配缓冲区使用 - 非直接缓冲区
+        while(inChannel.read(buffer) != -1) {   // 向缓冲区写入数据
+            buffer.flip();                      // 转成读取模式
+            outChannel.write(buffer);           // 从缓冲区读取数据
+            buffer.clear();                     // 清空缓冲区
+        }
+    // 搭配缓冲区使用 - 直接缓冲区(硬盘映射文件)
+        FileChannel inChannel = FileChannel.open(inPath, StandardOpenOption.READ);
+        FileChannel outChannel = FileChannel.open(outPath, StandardOpenOption.WRITE, StandardOpenOption.READ, StandardOpenOption.CREATE_NEW);
+        MappedByteBuffer inBuffer = inChannel.map(FileChannel.MapMode.READ_ONLY, 0, inChannel.size());
+        // outBuffer 的 size 设置可能有大小限制，因为使用 inChannel.size() 会出错: OutOfMemoryError: Map failed
+        MappedByteBuffer outBuffer = outChannel.map(FileChannel.MapMode.READ_WRITE, 0, inChannel.size());
+        byte[] dst = new byte[inBuffer.limit()];
+        inBuffer.get(dst);
+        outBuffer.put(dst);
+  通道之间的数据传输
+    transferFrom()
+    transferTo()        
+    // 两个方法使用一个即可
+    inChannel.transferTo(0, inChannel.size(), outChannel);
+    outChannel.transferFrom(inChannel, 0, inChannel.size());
+  分散(Scatter)与聚集(Gather)
+    分散读取 - Scattering Reads 将通道中的数据分散到多个缓冲区中，依次将缓冲区填满
+    聚集写入 - Gathering Writes 将多个缓冲区的数据聚集到通道中，按照读取到缓冲区的顺序写入到通道
+  字符集 - Charset
+    编码 : 字符串转为字节数组的过程
+    解码 : 字节数组转为字符串的过程
+    SortedMap<String, Charset> charsets = Charset.availableCharsets();      // 所有的可用字符集
+    Charset gbk = Charset.forName("gbk");           // 获得指定的字符集
+    CharsetEncoder gbkEncoder = gbk.newEncoder();   // 获得对应的编码器
+    CharsetDecoder gbkDecoder = gbk.newDecoder();   // 获得对应的解码器
+    gbkEncoder.encode(CharBuffer);                  // 编码
+    gbk.encode(String);                             // 编码
+    gbkDecoder.decode(ByteBuffer);                  // 解码
+    gbk.decode(ByteBuffer);                         // 解码
 5 NIO 的非阻塞式网络通信
+    阻塞与非阻塞
+        NIO的非阻塞模式
+            将客户端的通道注册在选择器上，选择器时时刻刻的监视通道，当通道完全准备就绪时，选择器才会将任务分配到服务器的一个或多个线程上。
+    使用NIO完成网络通信的三要素
+        通道 Channel - 负责连接
+            java.nio.channels.Channel 接口
+                |-- SocketChannel
+                |-- ServerSocketChannel
+                |-- DatagramChannel
+                
+                |-- Pipe.SinkChannel
+                |-- Pipe.SourceChannel
+        缓冲区 Buffer - 负责数据的存取
+        选择器 Selector - 是 SelectableChannel 的多路复用器，用于监控 SelectableChannel 的IO情况
+    阻塞式
+        Client
+            SocketAddress remote = new InetSocketAddress(InetAddress.getLocalHost(), 9999);
+            SocketChannel clientChannel = SocketChannel.open(remote);       // 打开通道，要指定服务器地址和端口
+            clientChannel.write(buffer);                // 将缓冲区的数据写入到通道中，如果数据过多，就使用循环
+            clientChannel.shutdownOutput();             // 为避免接收服务器响应的数据时发生阻塞，应在发送完数据后，关闭掉输出流
+            clientChannel.read(receiverBuffer);         // 将服务器响应的数据读取到缓冲区中
+        Server
+            ServerSocketChannel serverChannel = ServerSocketChannel.open(); // 打开服务器端通道
+            InetSocketAddress local = new InetSocketAddress(InetAddress.getLocalHost(), 9999);
+            serverChannel.bind(local);                  // 绑定服务器地址和端口号
+            SocketChannel acceptChannel = serverChannel.accept();           // 打开连接客户端的通道
+            acceptChannel.read(buffer);                 // 将客户端发送的数据读取到缓冲区中，数据过大，使用循环
+            acceptChannel.write(sendBuffer);            // 将服务端的响应数据发送给客户端
+    非阻塞式
+        SelectionKey
+            SelectionKey.OP_READ     监听读
+            SelectionKey.OP_WRITE    监听写
+            SelectionKey.OP_CONNECT  监听连接
+            SelectionKey.OP_ACCEPT   监听接收
+            可以同时监听多个状态，使用 | 操作，例如 SelectionKey.OP_READ | SelectionKey.OP_WRITE
+        Client
+            // 客户端设置和阻塞式大体一致，只需要额外设置一项
+            clientChannel.configureBlocking(false);     // 使用非阻塞模式
+        Server
+            serverChannel.configureBlocking(false);     // 同样的，服务端也需要使用非阻塞模式
+            // 除此之外，还需要使用选择器 Selector
+            Selector selector = Selector.open();        // 获取选择器
+            serverChannel.register(selector, SelectionKey.OP_ACCEPT);       // 注册选择器，指定监听‘接收事件’
+            while (selector.select() > 0) {             // 开始轮询获取选择器上的事件
+                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();       // 获得当前监听器上所有注册的“已就绪的监听时间”
+                while (iterator.hasNext()) {
+                    SelectionKey key = iterator.next(); // 获得已就绪的事件
+                    if (key.isAcceptable) {             // 接收事件
+                        SocketChannel acceptChannel = serverChannel.accept();           // 获得客户端通道
+                        acceptChannel.configureBlocking(false);                         // 设置为非阻塞模式
+                        acceptChannel.register(selector, SelectionKey.OP_READ);         // 将客户端通道注册到选择器上，模式为 读
+                    } else if (key.isReadable) {
+                        // 在此处读取客户端发送的数据
+                        SocketChannel clientChannel = (SocketChannel) key.channel();
+                    }
+                    iterator.remove();                  // 处理完事件后，要移除，避免重复处理
+                }
+            }
+    DatagramChannel
+        DatagramChannel dChannel = DatagramChannel.open();      // DatagramChannel 通道
+        dChannel.send(buffer);          // 发送缓冲区中的数据
+        dChannel.read(buffer);          // 将收到的数据读取到缓冲区中
 6 管道 - Pipe
+    两个线程间的单向数据连接。有两个通道，一个 Source 通道，一个 Sink 通道。 缓冲区写到 Sink 通道，从 Source 通道读出。
+    Pipe pipe = Pipe.open();
+    Pipe.SinkChannel sink = pipe.sink();
+    sink.write(buffer);                 // 发送数据
+    Pipe.SourceChannel source = pipe.source();
+    source.read(buffer);                // 读取数据
 7 NIO2
-
+    ARM - Automatic Resource Manager 自动资源管理
+        可自动关闭文件，主要用于当不再需要文件时，可以防止忘记释放它们。
+      语法
+        
+    Paths & Path
+      Paths
+        Path path = Paths.get("");      // 用于将多个字符串串连成路径
+      Path
+        boolean endsWith(String path)   // 判断是否以path 路径结束
+        boolean startsWith(String path) // 判断是否以path 路径开始
+        boolean isAbsolute()            // 判断是否是绝对路径
+        Path getFileName()              // 返回与调用Path 对象关联的文件名
+        Path getName(int idx)           // 返回的指定索引位置idx 的路径名称
+      int getNameCount()              // 返回Path 根目录后面元素的数量
+      Path getParent()                // 返回Path对象包含整个路径，不包含Path 对象指定的文件路径
+      Path getRoot()                  // 返回调用Path 对象的根路径
+      Path resolve(Path p)            // 将相对路径解析为绝对路径
+      Path toAbsolutePath()           // 作为绝对路径返回调用Path 对象
+      String toString()               // 返回调用Path 对象的字符串表示形式
+    Files & File
+      Files
+        Path copy(Path src, Path dest, CopyOption … how)        // 文件的复制
+        PathcreateDirectory(Path path, FileAttribute<?> … attr) // 创建一个目录
+        Path createFile(Path path, FileAttribute<?> … arr)      // 创建一个文件
+        void delete(Path path)                                  // 删除一个文件
+        Path move(Path src, Path dest, CopyOption…how)          // 将src 移动到dest 位置
+        long size(Path path)                                    // 返回path 指定文件的大小
+        boolean exists(Path path, LinkOption … opts)            // 判断文件是否存在
+        boolean isDirectory(Path path, LinkOption … opts)       // 判断是否是目录
+        boolean isExecutable(Path path)                         // 判断是否是可执行文件
+        boolean isHidden(Path path)                             // 判断是否是隐藏文件
+        boolean isReadable(Path path)                           // 判断文件是否可读
+        boolean isWritable(Path path)                           // 判断文件是否可写
+        boolean notExists(Path path, LinkOption … opts)         // 判断文件是否不存在
+        public static <A extends BasicFileAttributes> A readAttributes(Path path,Class<A> type,LinkOption... options) : 获取与path 指定的文件相关联的属性。
+        SeekableByteChannel newByteChannel(Path path, OpenOption…how) : 获取与指定文件的连接，how 指定打开方式。
+        DirectoryStream newDirectoryStream(Path path)           // 打开path 指定的目录
+        InputStream newInputStream(Path path, OpenOption…how)   // 获取InputStream 对象
+        OutputStream newOutputStream(Path path, OpenOption…how) // 获取OutputStream 对象
 
 问题
 1.
@@ -150,3 +255,5 @@
     结果
         使用相同字符集可以正常解码；
         使用不同字符集时，直接用字符集解码，出现乱码；使用字符集的编码集进行解码，出现报错：java.nio.charset.MalformedInputException: Input length = 1
+    参考
+        https://blog.csdn.net/wang_zhenwei/article/details/49582551
