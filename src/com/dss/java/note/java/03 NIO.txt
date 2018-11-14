@@ -255,5 +255,6 @@
     结果
         使用相同字符集可以正常解码；
         使用不同字符集时，直接用字符集解码，出现乱码；使用字符集的编码集进行解码，出现报错：java.nio.charset.MalformedInputException: Input length = 1
+        // Checked exception thrown when an input byte sequence is not legal for given charset, or an input character sequence is not a legal sixteen-bit Unicode sequence.
     参考
         https://blog.csdn.net/wang_zhenwei/article/details/49582551

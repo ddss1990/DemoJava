@@ -1,7 +1,7 @@
 .idea/
 Base.iml
 DemoJava.iml
-#.gitignore
+.gitignore
 out
 picture.jpg
 lib/commons-dbcp-1.4-javadoc/
@@ -10,3 +10,5 @@ lib/c3p0-0.9.1.2-javadoc/
 .project
 .settings/
 bin/
+c3p0-config.xml.bak
+.gitignore

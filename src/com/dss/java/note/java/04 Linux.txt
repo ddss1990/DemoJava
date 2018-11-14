@@ -1,0 +1,79 @@
+Linux
+/**
+* 学习时间 : 2018/11/14
+* 视频时间 : 2018/3/16
+*/
+1 Linux 开山
+    1.1 学习流程
+        a. Linux下的基本操作命令，包括文件操作命令(mkdir, rm 等)，编辑工具使用(vi, vim)，用户管理(useradd, userdel)等
+        b. Linux的各种配置(环境变量配置，网络配置，服务配置)
+        c. 搭建对应语言的开发环境
+        d. 编写shell脚本，对Linux服务器进行维护
+        
+        e. 能进行安全设置，防止攻击，保障服务器正常运行，能对系统调优
+        f. 深入理解Linux系统(对内核有研究)，熟练掌握大型网站应用架构组成、并熟悉各个环节的部署和维护方法
+2 基础篇
+    2.1 介绍
+        Linux 免费，开源，安全，高效，稳定，处理高并发强悍
+        发行版 : Ubuntu, CentOS, RetHat 等
+    2.2 Linux 和 Unix
+        Unix -> AT&T SystemV -> MiniX -> GNU/Linux内核 -> Ubuntu, CentOS, RetHat
+        Unix - C 语言
+    2.3 VM 和 Linux 的安装
+        CentOS 下载网址  6.X 版本
+            网易镜像：http://mirrors.163.com/centos/6/isos/
+            搜狐镜像：http://mirrors.sohu.com/centos/6/isos
+        CentOS 安装注意事项
+            // 先不选择镜像文件，配置好虚拟机后再配置镜像，这样可以在安装过程中手动的设置一些东西
+            主机名 - hadoop
+            网络连接
+                桥接模式 - IP地址和主机在同一网段，容易造成IP地址冲突
+                NAT - 网络地址转换模式，主机会出现两个IP地址，其中一个和虚拟机在一个频段。虚拟机可以访问主机所在区间的网络，但是主机区间的其它IP地址不能访问虚拟机。
+                仅主机模式 - 虚拟机是独立的主机，不能访问外网
+            分区
+                根   - 标准分区 -  /   - 剩余大小
+                swap - 标准分区 - swap - 物理内存 1~2倍
+                boot - 标准分区 - ext4 - 200M
+            自定义安装
+                基本系统 - 兼容程序库，调试工具
+                应用程序 - 浏览器
+                桌面 - 保留默认
+                语音支持 - 中文，英文
+                其余都不选
+            网络配置
+                选择启用 eth0 ，即可连接到网络  eth0 - 网络名
+                如果想开机自动联网
+                    1. 修改 eth0 网卡的配置
+                        vi /etc/sysconfig/network-scripts/ifcfg-eth0
+                            修改 ONBOOT=no     ==>		ONBOOT=yes
+                    2. 重启网络服务
+                        sudo service network restart
+                    3. 查看IP
+                        ip addr
+                重启网络报错 : Error: Connection activation failed: The connection is not for this device.
+                    chkconfig NetworkManager off
+                    chkconfig network on
+                    service NetworkManager stop
+                    service network start
+            VMTools
+                功能
+                    直接粘贴命令在 Windows 和 CentOS 之间
+                    设置 Windows 和 CentOS 之间的共享文件夹
+                安装
+                    1. 点击 VM 菜单的 install vmware tools
+                        cp VMwareTools-XXXX.tar.gz /opt
+                    2. 解压CentOS出现的VM压缩包
+                        cd /opt
+                        tar -zxvf VMwareTools-XXXX.tar.gz
+                    3. 进入解压目录
+                        cd vmware-tools-distrib/
+                    4. 安装
+                        ./vmware-install.pl
+                    5. 使用默认配置即可，安装完成重启
+                        reboot
+                    6. 这个时候就已经可以互相复制粘贴命令了
+                    7. 设置共享文件夹
+                        a. 虚拟机 - 设置 - 选项 - 共享文件夹 - 启用
+                        b. 选定一个文件夹即可
+                        c. 在虚拟机中共享文件夹的位置在 /mnt/hgfs/share/ 下
+        
