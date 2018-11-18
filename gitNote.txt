@@ -47,7 +47,13 @@ vim .gitignore
 Git config --global http.postBuffer 524288000
 
 
-
+// 使用SSH克隆代码
+    eval "$(ssh-agent -s)"          // 确保使用SSH代理
+    ssh-add ~/.ssh/id_rsa           // 为SSH Key 使用SSH代理
+    sudo apt-get install xclip
+    xclip -sel clip < ~/.ssh/id_rsa.pub
+    // 将生成的SSH Key 添加到GitHub中
+    git clone git@github.com:ddss1990/DemoJava.git      // 下载代码
 
 
 

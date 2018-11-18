@@ -317,12 +317,133 @@ Linux
                     /dev/sdb1 挂载点 ext4 defaults 0 0
                 卸载
                     umount 挂载点
-
-
-
-
-
-
+        磁盘查询指令
+            df -hl              查询系统整体磁盘使用情况
+            du -h               查询指定目录的磁盘使用情况
+                -s              指定目录占用大小
+                -a              含文件
+                --max-depth=1   子目录深度
+                -c              列出明细的同时，增加汇总值
+            ls -l /home | grep "^-" | wc -l         统计指定文件夹下文件的个数
+            ls -l /home | grep "^d" | wc -l         统计指定文件夹下目录的个数
+            ls -lR /home | grep "^-" | wc -l        统计指定文件夹下及子文件夹下文件的个数
+            ls -lR /home | grep "^d" | wc -l        统计指定文件夹下及子文件夹下目录的个数
+    3.8 网络配置
+        固定IP地址
+            /etc/sysconfig/network-scripts/ifcfg-eth0
+                IPADDR - ip
+                GATEWAY - 网关
+                DNS1 - 同网关
+                BOOTPROTO -> static
+                ONBOOT -> yes
+            service network restart
+    3.9 进程管理
+        ps - 显示系统正在执行的进程
+            -a          显示当前终端的所有进程信息
+            -u          以用户的格式显示进程信息
+            -x          显示后台进程运行的参数
+            USER    PID     %CPU    %MEM    VSZ     RSS     TTY     STAT    START   TIME    COMMAND
+            用户名, 进程ID, 占用CPU, 占用内存, 使用的虚拟内存, 使用物理内存情况, 使用的终端, 进程的状态, 启动时间, 占用CPU的总时间, 进程启动时执行的命令
+                STAT 
+                    S - 睡眠
+                    s - 该进程是会话的先导进程
+                    R - 正在运行
+                    D - 短期等待
+                    Z - 僵死进程
+            -e          以全格式显示当前所有进程
+            -f          全格式，包含进程的父进程
+        kill - 终止进程
+            kill [选项] 进程号               通过进程号杀死进程
+                -9      强制进程立即停止
+            killall 进程名称                 通过进程名杀死进程，支持通配符
+        pstree - 进程树
+            -p          显示进程PID
+            -u          显示进程的所属用户
+            Ubuntu 的根是systemd, CentOS 的根是 init
+    3.10 服务管理
+        service 服务名 [start|stop|restart|reload|status]
+            systemctl(CentOS 7.0 之后的版本使用 systemctl 代替 service)
+            iptables    防火墙
+        telnet ip 端口          检查Linux的指定端口是否启用
+        /etc/init.d/            查看系统现有的服务
+        chkconfig - 给每个服务的各个运行级别设置自启动/关闭
+            chkconfig --list | grep XXX         查看服务
+            chkconfig 服务名 --list             
+            chkconfig --level 5 服务名 on/off   设置是否自启动
+        top - 动态监控
+            -d 秒数             指定top命令每隔几秒刷新，默认3秒
+            -i                  不显示任何僵死或闲置进程
+            -p                  指定进程ID来仅监控此进程的状态
+            交互操作指令
+                P               以CPU使用率排序，默认就是如此
+                M               以内存的使用率排序
+                N               以PID排序
+                u               指定某个用户，对该用户进行动态监控
+        netstat - 查看系统网络情况
+            -an                 按一定顺序排列输出
+            -p                  显示哪个进程在调用
+    3.11 RPM - CentOS
+        RedHat Package Manager
+        rpm -qa | grep XXX      查询是否有安装XXX包
+        rpm -qi XXX             查询是否安装XXX
+        rpm -ql XXX             查询XXX软件安装在哪里，都有哪些安装文件
+        rpm -qf FILE            查询文件是哪个软件的
+        rpm -e [] XXX           卸载XXX
+            --nodeps        当要删除的软件作为其它软件库的时候，使用此命令可以强制删除
+        rpm -ivh XXX.rpm        安装软件
+            i - install 安装 
+            v - verbose 提示
+            h - hash 进度条
+    3.12 YUM - CentOS
+        能从指定的服务器自动下载RPM包并且安装，可自动处理依赖性关系
+        yum list | grep XXX     查询YUM服务器有没有要安装的软件
+        yum install XXX         下载并安装
+4 定制篇
+    4.1 JavaEE
+        JDK, Tomcat, eclipse(IDEA), MySQL
+        JDK
+            mv /home/dss/workspace/jdk-8u191-linux-x64.tar.gz /opt/
+            tar -zxvf jdk-8u191-linux-x64.tar.gz
+            vim /etc/profile
+                export JAVA_HOME=/opt/jdk1.8.0_191
+                export JRE_HOME=${JAVA_HOME}/jre
+                export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+                export PATH=${JAVA_HOME}/bin:$PATH
+            source /etc/profile
+            配置软链接
+                update-alternatives --install /usr/bin/java  java /opt/jdk1.8.0_191/bin/java 300
+                update-alternatives --install /usr/bin/javac  javac /opt/jdk1.8.0_191/bin/javac 300
+                update-alternatives --display java      # 查看当前系统存在的jdk及优先级
+            java -version           # 测试是否安装成功
+        Tomcat
+            https://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/    下载安装8
+            mv /home/dss/workspace/apache-tomcat-8.5.34.tar.gz /opt
+            tar -zxvf apache-tomcat-8.5.34.tar.gz
+            ln -s /opt/apache-tomcat-8.5.34/ /opt/tomcat8       # 创建软链接
+            /opt/tomcat8/bin/startup.sh                         # 启动Tomcat
+            cd apache-tomcat-8.5.34/bin
+            ./startup.sh
+            配置管理员权限
+                vim /opt/tomcat8/conf/tomcat-users.xml
+                    <role rolename="manager-gui"/>
+                    <role rolename="admin-gui"/>
+                    <user username="root" password="123456" roles="manager-gui,admin-gui"/>
+            开机自启动
+                cp tomcat8/bin/catalina.sh /etc/init.d/tomcat8
+                sysv-rc-conf
+                    修改运行级别2-5为开
+                    
+            方式2 
+                apt-get install tomcat8 tomcat8-docs tomcat8-examples tomcat8-admin
+                service tomcat8 start/stop/restart
+                apt-get autoremove tomcat8          # 卸载
+            
+            CentOS 修改 /etc/sysconfig/iptables 开放端口
+        MySQL
+            apt-get install mysql-server
+            apt-get isntall mysql-client
+            apt-get install libmysqlclient-dev
+            netstat -tap | grep mysql          # 检查是否安装成功
 
 
 

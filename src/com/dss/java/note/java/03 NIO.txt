@@ -24,7 +24,7 @@
             put();      // 存入数据到缓冲区中
             get();      // 获取缓冲区中的数据
           // 核心属性
-            private int mark = -1;      // 标记，表示记录当前position的位置，可通过 reset() 恢复到makr位置
+            private int mark = -1;      // 标记，表示记录当前position的位置，可通过 reset() 恢复到mark位置
             private int position = 0;   // 位置，缓冲区中正在操作数据的位置
             private int limit;          // 界限，表示缓冲区中可以操作数据的大小，limit后的数据不能进行读写
             private int capacity;       // 容量，缓冲区中最大存储数据的容量，不能修改
@@ -152,7 +152,7 @@
             Selector selector = Selector.open();        // 获取选择器
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);       // 注册选择器，指定监听‘接收事件’
             while (selector.select() > 0) {             // 开始轮询获取选择器上的事件
-                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();       // 获得当前监听器上所有注册的“已就绪的监听时间”
+                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();       // 获得当前监听器上所有注册的“已就绪的监听事件”
                 while (iterator.hasNext()) {
                     SelectionKey key = iterator.next(); // 获得已就绪的事件
                     if (key.isAcceptable) {             // 接收事件
