@@ -1,0 +1,60 @@
+环境配置
+JDK
+    Linux
+        mv /home/dss/workspace/jdk-8u191-linux-x64.tar.gz /opt/
+        tar -zxvf jdk-8u191-linux-x64.tar.gz
+        vim /etc/profile
+            export JAVA_HOME=/opt/jdk1.8.0_191
+            export JRE_HOME=${JAVA_HOME}/jre
+            export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+            export PATH=${JAVA_HOME}/bin:$PATH
+        source /etc/profile
+        配置软链接
+            update-alternatives --install /usr/bin/java  java /opt/jdk1.8.0_191/bin/java 300
+            update-alternatives --install /usr/bin/javac  javac /opt/jdk1.8.0_191/bin/javac 300
+            update-alternatives --display java      # 查看当前系统存在的jdk及优先级
+        java -version           # 测试是否安装成功
+Tomcat
+    Linux
+        https://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/    下载安装8
+        mv /home/dss/workspace/apache-tomcat-8.5.34.tar.gz /opt
+        tar -zxvf apache-tomcat-8.5.34.tar.gz
+        ln -s /opt/apache-tomcat-8.5.34/ /opt/tomcat8       # 创建软链接
+        /opt/tomcat8/bin/startup.sh                         # 启动Tomcat
+        cd apache-tomcat-8.5.34/bin
+        ./startup.sh
+        配置管理员权限
+            vim /opt/tomcat8/conf/tomcat-users.xml
+                <role rolename="manager-gui"/>
+                <role rolename="admin-gui"/>
+                <user username="root" password="123456" roles="manager-gui,admin-gui"/>
+        开机自启动
+            cp tomcat8/bin/catalina.sh /etc/init.d/tomcat8
+            sysv-rc-conf
+                修改运行级别2-5为开
+      方式2 
+        apt-get install tomcat8 tomcat8-docs tomcat8-examples tomcat8-admin
+        service tomcat8 start/stop/restart
+        apt-get autoremove tomcat8          # 卸载
+    
+        CentOS 修改 /etc/sysconfig/iptables 开放端口
+    Windows
+        https://www.cnblogs.com/beginner-boy/p/7806680.html
+        1. 下载解压到 C:\Program Files (x86)\Tomcat
+        2. 配置环境变量   
+            TOMCAT_HOME - C:\Program Files (x86)\Tomcat
+            CATALINA_HOME - C:\Program Files (x86)\Tomcat
+            并将环境变量加到Path中去
+                ;%TOMCAT_HOME%\bin;%CATALINA_HOME%\lib
+        3. 在CMD的管理员模式下启动命令 startup Tomcat就成功开启了
+        4. 验证
+            http://172.0.0.1:8080
+MySQL
+    Ubuntu
+        apt-get install mysql-server
+        apt-get isntall mysql-client
+        apt-get install libmysqlclient-dev
+        netstat -tap | grep mysql          # 检查是否安装成功
+    CentOS
+    Windows
+        直接下一步下一步安装

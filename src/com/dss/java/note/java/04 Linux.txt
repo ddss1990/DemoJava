@@ -220,6 +220,14 @@ Linux
                 -name<查询方式>         按指定的文件名查找模式查找文件
                 -user<用户名>           查找属于指定用户名所有文件
                 -size<文件大小>         按照指定的文件大小查找文件，+n 大于；-n 小于；n 等于。需要加单位 k,M,G等
+                -atime +/-n             +表示n天前存取过的文件, -表示n天内存取过的文件
+                -amin +/-n              +表示n分钟前存取过的文件, -表示n分钟内存取过的文件
+                -mtime +/-n             +表示n天前修改过的文件, -表示n天内修改过的文件
+                atime ctime mtime 比较
+                    atime - 访问时间 文件中的数据最后被访问的时间
+                    ctime - 状态修改时间 文件的权限、拥有者、所属的组、链接数发生改变时的时间。
+                    mtime - 修改时间 文件内容被修改的最后时间
+                    stat filename 查看三者时间
             locate          快速定位文件路径，使用 locate 之前，需要用 updatedb 创建locate数据库
                 locate 搜索文件
             grep [选项] 查找内容 源文件
@@ -401,61 +409,156 @@ Linux
 4 定制篇
     4.1 JavaEE
         JDK, Tomcat, eclipse(IDEA), MySQL
-        JDK
-            mv /home/dss/workspace/jdk-8u191-linux-x64.tar.gz /opt/
-            tar -zxvf jdk-8u191-linux-x64.tar.gz
-            vim /etc/profile
-                export JAVA_HOME=/opt/jdk1.8.0_191
-                export JRE_HOME=${JAVA_HOME}/jre
-                export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
-                export PATH=${JAVA_HOME}/bin:$PATH
-            source /etc/profile
-            配置软链接
-                update-alternatives --install /usr/bin/java  java /opt/jdk1.8.0_191/bin/java 300
-                update-alternatives --install /usr/bin/javac  javac /opt/jdk1.8.0_191/bin/javac 300
-                update-alternatives --display java      # 查看当前系统存在的jdk及优先级
-            java -version           # 测试是否安装成功
-        Tomcat
-            https://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/    下载安装8
-            mv /home/dss/workspace/apache-tomcat-8.5.34.tar.gz /opt
-            tar -zxvf apache-tomcat-8.5.34.tar.gz
-            ln -s /opt/apache-tomcat-8.5.34/ /opt/tomcat8       # 创建软链接
-            /opt/tomcat8/bin/startup.sh                         # 启动Tomcat
-            cd apache-tomcat-8.5.34/bin
-            ./startup.sh
-            配置管理员权限
-                vim /opt/tomcat8/conf/tomcat-users.xml
-                    <role rolename="manager-gui"/>
-                    <role rolename="admin-gui"/>
-                    <user username="root" password="123456" roles="manager-gui,admin-gui"/>
-            开机自启动
-                cp tomcat8/bin/catalina.sh /etc/init.d/tomcat8
-                sysv-rc-conf
-                    修改运行级别2-5为开
-                    
-            方式2 
-                apt-get install tomcat8 tomcat8-docs tomcat8-examples tomcat8-admin
-                service tomcat8 start/stop/restart
-                apt-get autoremove tomcat8          # 卸载
-            
-            CentOS 修改 /etc/sysconfig/iptables 开放端口
-        MySQL
-            apt-get install mysql-server
-            apt-get isntall mysql-client
-            apt-get install libmysqlclient-dev
-            netstat -tap | grep mysql          # 检查是否安装成功
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            软件安装步骤参考 add_env_install.txt
+5 Shell
+    命令行解释器
+    5.1 要求
+        以 #! /bin/bash 开头
+        需要有可执行权限
+    5.2 变量    
+        系统变量 - $HOME, $PATH, $USER 等
+        用户自定义变量
+            定义变量 : 变量=值
+            撤销变量 : unset 变量
+            静态变量 : readonly 变量   (不能unset, unset会报错)
+        set - 查看当前shell中所有的变量
+        将命令的结果返回给一个变量
+            变量名一般为大写，=号两侧不能有空格
+            反引号 - VAR=`ls -l`
+            $()    - VAR=$(ls -l)
+        设置环境变量
+            export 变量名=变量值
+    多行注释
+        :<<!
+        !
+    5.3 位置参数变量 - 获取命令行的参数信息
+        $n      n为数字，$0代表命令本身，$1~$9代表第1~9个参数，十以上的参数用大括号表示${10}
+        $*      命令行中所有的参数，将所有的参数看作一个整体
+        $@      命令行中所有的参数，但把每个参数区分看待
+        $#      参数的个数
+      预定义变量 - 预先定义好的变量
+        $$      当前进程的进程号
+        $!      后台运行的最后一个进程的进程号
+        $?      最后一次执行的命令的返回状态 0 - 执行正确
+    ./test.sh &            在脚本中使用此命令代表后台执行
+    5.4 运算符
+        $((运算式)) 或 $[运算式]
+            例 : $(((2+3)*4))    $[(2+3)*4]
+        expr m + n
+            TEMP=`expr 2 + 3`
+            RESULT=`expr $TEMP \* 4`
+    5.5 条件判断
+        [ condition ]     # condition 前后有空格，非空为true
+            整数间的比较
+                =       字符串比较
+                -lt     小于
+                -le     小于等于
+                -eq     等于
+                -gt     大于 
+                -ge     大于等于
+                -ne     不等于
+            文件权限判断
+                -r      有读的权限
+                -w      有写的权限
+                -x      有执行的权限
+            文件类型判断
+                -f      文件存在并是一个常规文件
+                -e      文件存在 
+                -d      文件存在并是一个目录
+            例子
+                [ "ok" = "ok" ]
+                [ 23 -gt 22 ]
+                [ -e abc.txt ]
+    5.6 流程控制
+        if [ 条件判断 ];then
+            程序
+        fi
+      或
+        if [ 条件判断 ] 
+            then 
+                程序
+        elif [ 条件判断 ] 
+            then 
+                程序
+        fi
+      for 
+        for 变量 in 值1 值2 ...
+            do 
+                程序
+            done
+        for((初始值;循环控制条件;变量变化))
+            do
+                程序
+            done
+        例
+            for i in "$@"   # 在这里可以看出来 $* 和 $@ 的区别
+            do
+                echo $i
+            done
+            for((i=1;i<=100;i++)
+            do
+                SUM=$(($SUM+$i))
+            done
+      while
+        while [ 条件判断 ] 
+        do
+            程序
+        done
+        例
+            while [ $i -le $1 ]
+            do 
+                SUM=$[$SUM+$i]
+                i=$[i+1]
+            done
+    5.7 读取控制台输入
+        read [选项] [参数]
+            选项
+                -p      指定读取值时的指示符
+                -t      指定读取时等待的时间
+            参数 - 变量名，将读取到的值读到参数中
+        例
+            read -p "请输入一个数num=" NUM
+            read -t 10 -p "请输入一个数num=" NUM      # 10秒之内不输入作废
+    5.8 函数
+        系统函数
+            basename    返回完整路径最后/的部分，用于获取文件名
+                basename [pathname] [suffix]        # suffix 为后缀，如果指定了 suffix, basename 会将 pathname 中的 suffix 去掉
+                  例 
+                    basename /home/chris/abc.txt    # abc.txt
+                    basename /home/chris/abc.txt .txt    # abc
+            dirname     返回完整路径最后/的前面部分，用于获取路径
+                dirname /home/chris/abc/txt         # /home/chris
+        自定义函数
+            [function] NAME[()] {
+                Action
+                [return ]
+            }
+            NAME 参数1 参数2 ...
+            例
+                function getSum() {
+                    SUM=$[$n1+$n2]
+                }
+    5.9 Demo
+        BACKUP_PATH=/home/chris/study/shell/backup/db
+        DATETIME=`date +%Y-%m-%d_%H%M%S` 
+        HOST=localhost  # 主机名
+        DB_USER=root    # 用户名
+        DB_PWD=root     # 密码
+        DB="test"
         
+        echo "Start backup database"
+        OUT_DIR=${BACKUP_PATH}/${DATETIME}
+        
+        mysqldump -u${DB_USER} -p${DB_PWD} --host=${HOST} ${DB} | gzip > ${OUT_DIR}/$DATETIME.sql.gz
+        
+        FILE_NAME=$DATETIME.tar.gz
+        cd ${BACKUP_PATH}
+        tar -zcvf ${FILE_NAME} ${DATETIME}
+        rm -fr ${DATETIME}
+        
+        find ${BACKUP_PATH} -mtime +10 -name "*.tar.gz" -exec rm -rf {} \;
+        
+        echo "backup database end"
+        
+        crontab -e 
+            10 2 * * * /home/chris/study/shell/demo.sh
