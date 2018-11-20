@@ -1,0 +1,105 @@
+Java8
+/**
+* 视频时间 2016/11/20
+* 学习时间 2018/11/20
+*/
+1 Lambda 表达式
+2 函数式接口
+3 方法引用与构造器引用
+4 Stream API
+5 接口中的默认方法和静态方法
+6 新时间日期API
+7 其它
+0 
+    HashMap
+      JDK 1.7
+        底层是数据，默认大小是16。插入数据，会根据插入的key值计算在数组中的位置，如果该处没有数据，就直接将对象存入。将 key, value 看为一个整体。
+        如果该处有数据，就会将新插入的key值与之前的key值进行比较，如果相同，就更新数据；
+        如果不相同，就在该位置形成一个链表，将新插入的数据放在表头，指向原有的数据或链表。这种插入方式成为碰撞。
+        加载因子(默认是0.75)，当元素到达哈希表的加载因子时对哈希表进行扩容。会对现有的链表进行重新计算位置，存入扩容后的哈希表中。
+      JDK 1.8
+        额外增加了红黑树。当碰撞的个数大于8时，并且总容量大于64时，会将链表转为红黑树。查询，删除的效率增加，插入的效率降低。
+        扩容后的位置是 数组中的位置 * 2 + 在红黑树中的深度
+    ConcurrentHashMap
+      JDK 1.7
+        并发级别(concurrentLevel)默认16。
+        采用锁分段机制。每个段中有一个表，表中有16个元素。
+      JDK 1.8
+        取消了段，使用CAS算法。效率比锁高。
+    底层内存结构
+      JDK 1.7 
+        方法属于堆中永久区(PremGen)的一部分。永久区中存放类加载信息，几乎不会被GC回收(条件苛刻)。
+      JDK 1.8
+        没有永久区了，取而代之的是元空间(MetaSpace)，使用的是物理内存。物理内存快满的时候进行回收。 
+    在匿名内部类中，使用局部变量，可以不为局部变量加上 final 关键字，系统默认会为我们添加。
+1 Lambda 表达式
+    Lambda - 匿名函数，一段可以传递的代码
+    以Comparator为例进行演示
+        内部类方式实现
+            Comparator<Integer> comparator = new Integer<>() {
+                @Override
+                public int compare(Integer o1, Integer o2) {
+                    return Integer.compare(o1, o2);
+                }
+            };
+        Lambda 表达式实现
+            Comparator<Integer> comparator = (x, y) -> Integer.compare(x, y);
+        
+        TreeSet<Integer> treeSet = new TreeSet<>(comparator);
+    策略设计模式
+        情况说明：
+            需要对数据进行查询，且满足单个条件，例如 age>20, age>50, salary>4000, salary<10000 等这种查询条件
+        不用设计模式
+            对每一个条件创建对应的方法，需要满足对应的条件，就调用对用的方法
+        设计模式
+            将比较方法作为一个接口抽离出来，每个条件改为通过类实现接口的方法去实现
+            interface MyFilter<T> {    public boolean filter(T t);    }
+            class FilterByAge implements MyFilter<Employee> {   
+                @Override
+                public boolean filter(T t) {      return age > 20;    }     }
+        个人理解
+            只是将一个类中的多个方法这种模式；变为多个类，每个类中都实现了接口中的方法这种模式。从一类多方法到多类一方法。
+            并不能看出来优势体现在哪里，这种设计模式的先进性在哪？
+      优化
+        1 使用匿名内部类的方式，而不是去创建每个类的对象，这样可以省却创建接口的实现类
+            List<Employee> employees4 = filterEmp(employees, new MyFilter<Employee>() {
+                @Override
+                public boolean filter(Employee employee) {
+                    return employee.getSalary() < 10000;
+                }
+            });
+        2 使用 Lambda 表达式代替匿名内部类，此时接口依然不能省去
+            List<Employee> employees5 = filterEmp(employees, employee -> employee.getSalary() < 10000);
+        3 使用 Stream API 进行进一步的优化
+            employees.stream()
+                .filter(employee -> employee.getAge() > 30)
+                .forEach(System.out::println);
+            employees.stream()
+//                .map(employee -> employee.getName())
+                .map(Employee::getName)     // 这两种方式都能输出Name，具体有什么不同，在 Stream API 中再看
+                .forEach(System.out::println);
+    语法
+        新操作符 ->
+            左侧 : 参数列表，对应于接口方法中的参数列表
+            右侧 : 所需执行的功能，对应于接口方法的实现
+        无参无返回值
+            () -> System.out.println("Hello world");
+        有一个参数无返回值 只有一个参数，小括号可以不写
+            (x) -> System.out.println(x);
+            x -> System.out.println(x);
+        多个参数，多条语句，语句使用大括号括起来
+            (x, y) -> {System.out.println(x);   System.out.println(y);    return Integer.compare(x, y);}
+        若只有一条语句，大括号和return都可以省略
+            (x, y) -> Integer.compare(x, y);
+        参数列表数据类型可以省略，因为JVM编译器可以通过上下文推断出数据类型，这个过程称为类型推断。
+      总结
+        左右遇一括号省  左侧推断类型省
+        Lambda需要函数式接口的支持
+2 函数式接口
+    接口中只有一个抽象方法的接口
+    @FunctionalInterface - 修饰接口，用来保证是否是函数式接口
+3 方法引用与构造器引用
+4 Stream API
+5 接口中的默认方法和静态方法
+6 新时间日期API
+7 其它

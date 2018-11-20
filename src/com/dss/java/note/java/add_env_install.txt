@@ -58,3 +58,21 @@ MySQL
     CentOS
     Windows
         直接下一步下一步安装
+        
+Note
+    MySQL
+        mysql         客户端工具   查询用
+        mysqld        服务执行工具
+        mysqladmin    运维和管理工具
+        1. Ubuntu mysqld_safe Directory ‘/var/run/mysqld’ for UNIX socket file don’t exists
+            mkdir -p /var/run/mysqld
+            chown mysql:mysql /var/run/mysqld
+            /usr/bin/mysqld_safe --skip-grant-tables &;
+                另开一shell，进入MySql，更改密码, flush privileges;
+            结束进程
+        2. service mysqld start
+            cp support-files/mysql.server /etc/init.d/mysqld
+            修改 /etc/init.d/mysqld 中的内容为自己安装MySql的位置
+                basedier=
+                datadir=
+                
