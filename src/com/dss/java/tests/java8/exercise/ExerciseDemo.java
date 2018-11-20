@@ -48,7 +48,22 @@ public class ExerciseDemo {
      * 3. 再将一个字符串的第2个和第4个索引位置进行截取子串
      */
     public void test2() {
+        String s = method2("abcd", str -> str.toUpperCase());
+        String s1 = method2("abcd", String::toUpperCase);
+        System.out.println("s = " + s);
+        String sub = method2("Hello Lambda", str -> str.substring(2, 4));
+        System.out.println("sub = " + sub);
+    }
 
+    // 2. 声明方法使用接口作为函数
+    public String method2(String str, MyInter2 inter2) {
+        return inter2.getValue(str);
+    }
+
+    // 1. 声明函数式接口
+    @FunctionalInterface
+    interface MyInter2 {
+        public String getValue(String str);
     }
 
 
@@ -58,4 +73,25 @@ public class ExerciseDemo {
      * 3. 在TestLambda中声明方法，使用接口作为参数，计算两个long型参数的和
      * 4. 再计算两个long类型参数的积
      */
+    @Test
+    public void test3() {
+        long l1 = 123412;
+        long l2 = 5234;
+        Long sum = method3(l1, l2, (p1, p2) -> p1 + p2);
+        System.out.println("sum = " + sum);
+        Long product = method3(l1, l2, (x, y) -> x * y);
+        System.out.println("product = " + product);
+    }
+
+    // 3 声明方法，接口作为参数
+    public <T, R> R method3(T t1, T t2, MyInter3<T, R> inter3) {
+        return inter3.getValue(t1, t2);
+    }
+
+    // 1. 声明带两个泛型的函数式接口
+    @FunctionalInterface
+    interface MyInter3<T, R> {
+        // 2. 接口中声明对应抽象方法
+        public R getValue(T t1, T t2);
+    }
 }
