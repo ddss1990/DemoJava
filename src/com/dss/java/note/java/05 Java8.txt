@@ -98,8 +98,141 @@ Java8
 2 函数式接口
     接口中只有一个抽象方法的接口
     @FunctionalInterface - 修饰接口，用来保证是否是函数式接口
+    内置四大核心函数式接口
+        Consumer<T> - 消费型接口 有参无返回值
+            void accept(T t);
+        Supplier<T> - 供给型接口 无参有返回值
+            T get();
+        Function<T, R> - 函数型接口 有参有返回值
+            R apply(T t);
+        Predicate<T> - 断言型接口 有参，返回值为boolean
+            boolean test(T t);
+    其它接口
+               接口             参数  返回值       方法                  备注
+        BiFunction<T, U, R>     T, R    R       R apply(T t, U u);
+        UnaryOperator<T>        T       T       T apply(T t);
+        BinaryOperator<T>       T, T    T       T apply(T t1, T t2);
+        BigConsumer<T, U>       T, U    void    void apply(T t, U u);
+        ToIntFunction<T>        T       int     int applyAsInt(T value);    自动装箱
+        ToLongFunction<T>       T       long    int applyAsLong(T value);   自动装箱
+        ToDoubleFunction<T>     T       double  int applyAsDouble(T value); 自动装箱
+        IntFunction<R>          int     R       R apply(int value);    
+        LongFunction<R>         long    R       R apply(long value);
+        DoubleFunction<R>       double  R       R apply(double value);
 3 方法引用与构造器引用
+    方法引用
+        若 Lambda 体中的内容有方法已经实现了，可以使用方法引用(可以理解为方法引用是 Lambda 表达式的另外一种表达方式)。
+            Lambda 体 : ->右边的内容
+        格式
+            1. 对象::实例方法名
+            2. 类::静态方法名
+            3. 类:实例方法名
+                前提
+                    第一个参数是实例方法的调用者，第二个参数(或无参)是实例方法的参数
+            前提
+                需要方法引用中的方法的返回值类型和参数类型 与 函数式接口中的方法的返回值类型和参数类型保持一直。
+        例子
+          1. 对象::实例方法名      
+            Lambda 表达式形式 : Consumer<String> consumer = x -> System.out.println(s);
+            方法应用形式:       Consumer<String> consumer = System.out::println;
+          2. 类::静态方法名
+            Comparator<Integer> comparator1 = (x, y) -> Integer.compare(x, y);
+            Comparator<Integer> comparator2 = Integer::compare;
+          3. 类::实例方法名
+            BiPredicate predicate1 = (x,y) -> x.equals(y);
+            BiPredicate predicate2 = Object::equals;
+            Function<Employee, String> function1 = employee -> employee.getName();
+            Function<? super Employee, ?> function = Employee::getName;
+    构造器引用
+        格式
+            ClassName::new
+                调用哪个构造器取决于函数式接口中有几个参数，需要对应于函数式接口中的方法。
+        例子
+            Supplier<Employee> supplier1 = () -> new Employee();
+            Supplier<Employee> supplier2 = Employee::new;
+    数组引用
+        格式
+            Type[]::new
+        例子
+            Function<Integer, String[]> function1 = n -> new String[n];
+            Function<Integer, String[]> function2 = String[]::new;
 4 Stream API
+    数据源 - 集合，数组等    
+    对数据流做一系列的流水线式的中间操作，之后产生一个新流，原来的流不会产生变化。
+    集合讲的是数据，流讲的是计算
+    操作Stream的步骤
+        1. 创建Stream 
+            a. 集合流 通过Collection的方法区创建
+                stream();           数序流
+                parallelStream();   并行流
+            b. 数组流 将一个数组变成流
+                Arrays.stream(array);
+            c. 通过 Stream 的静态方法 of()
+                Stream.of(T ... t);
+            d. 无限流
+              迭代式
+                Stream.interate(seed, UnaryOperator)
+                    seed - 种子，可以理解为起始值
+                    UnaryOperator - 一元操作，可以是自增
+                    Stream.interate(0, x -> x + 2);
+              生成式
+                Stream.generate(Supplier);
+        2. 中间操作
+            筛选与切片
+                filter(Predicate) - 接收 Lambda ，从流充排除某些元素，过滤掉不满足条件的元素
+                limit(n) - 截断流，使其元素不超过给定数值
+                skip(n) - 跳过元素，返回一个扔掉前n个元素的流，若流中元素不足n个，则返回一个空流，与limit(n)互补
+                distinct() - 去重，根据流中元素的 hashCode() 和 equals() 去除重复元素
+            映射
+                map(Function) - 接收 Lambda 将元素转换成其它形式或提取信息。接收一个函数作为参数，该函数会被应用到每个元素上，并将其映射成一个新的元素
+                    map(str -> str.toUpperCase()); // 字符串转大写
+                flatMap() - 接收一个函数作为参数，将流中的每个值都换成另一个流，然后把所有的流连接成一个流，flatMap要求函数的返回值必须是个流
+            排序
+                sorted() - 自然排序(Comparable - compareTo()) 升序
+                sorted(Comparator) - 定制排序
+        3. 终止操作，得到结果
+            查找与匹配
+                allMatch - 查找是否匹配所有元素，也就是流中的所有元素都满足条件 返回值 - boolean
+                anyMatch - 查找是否匹配至少一个元素 返回值 - boolean
+                noneMatch - 检查是否没有匹配所有元素 返回值 - boolean
+                findFirst - 返回第一个元素 返回值 - Optional<T>, 再通过 get() 方法去获得包装的对象
+                findAny - 返回当前流中的任意元素 返回值 - Optional<T>
+                count - 返回流中元素的总个数 返回值 - Long
+                max - 返回流中最大值 返回值 - Optional<T>
+                min - 返回流中最小值 返回值 - Optional<T>
+            归约 - 将流中元素反复结合起来，形成一个值
+                reduce(T, BinaryOperator)
+                reduce(BinaryOperator)
+              例如
+                List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+                list.stream().reduce(0, (x, y) -> x + y);    // 用来递归求和 0 - 起始值
+                Optional<Double> op = employees.stream().map(Employee::getSalary).reduce(Double::sum);
+            收集
+                collect(Collector) - 将流转换为其它形式，接收一个 Collector 接口的实现，用于给Stream中元素做汇总的方法
+                    Collector - 收集器，定义收集的方式 Collectors提供了很多静态方法，用于创建收集器实例
+                        Collectors.toList() -> 收集成 List
+                        Collectors.toSet() -> 收集成 Set
+                        Collectors.toCollection(Supplier) -> 收集成自定义格式
+                            Collectors.toCollection(HashSet::new)
+                        Collectors.counting() -> 总数
+                        Collectors.averagingDouble(Mapper) -> 平均值
+                            Collectors.averagingDouble(Employee::getSalary)
+                        Collectors.summingDouble(Employee::getSalary) -> 总和
+                        Collectors.maxBy(Comparator) -> 最大值
+                        Collectors.gropingBy(Function) -> 分组 返回Map, key是分组的根据，value是分组后的数据
+                        Collectors.gropingBy(Function, Collector) -> 多级分组
+                        Collectors.partitionBy(Predicate) -> 分区，满足条件的是一组，不满足条件的是一组
+                        Collectors.summarizingLong(ToDoubleFunction) -> 汇总 返回值 - DoubleSummaryStatistics dss
+                            dss.getSum() -> 总和
+                            dss.getAverage() -> 平均值
+                            dss.getMax() -> 最大值
+                        Collectors.joining(",", "---", "---") -> 连接
+                            p1 - 连接符，每个元素之间的连接符
+                            p2 - 起始连接符，在第一个元素前
+                            p3 - 结束连接符，在最后一个元素后
+    总结
+        中间操作不会单独执行，只有在执行终止操作时，才会一次性的将中间操作全部执行，称为惰性求值。
+        map - reduce 模式
 5 接口中的默认方法和静态方法
 6 新时间日期API
 7 其它
