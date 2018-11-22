@@ -5,8 +5,17 @@ import com.dss.java.tests.java8.filter.FilterByAgeImpl;
 import com.dss.java.tests.java8.filter.inter.MyFilter;
 import org.junit.Test;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -359,6 +368,59 @@ public class TestJava8 {
         Double.compare(1, 2);
 
         List<String> collect = employees.stream().map(Employee::getName).collect(Collectors.toList());
+    }
+
+    /**
+     * SimpleDateFromat是线程不安全的，使用多线程操作会有问题
+     *
+     * @throws ParseException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @Test
+    public void testConcurrentDate() throws ParseException, ExecutionException, InterruptedException {
+        //java.util.concurrent.ExecutionException: java.lang.NumberFormatException: For input string: ""
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Date date = sdf.parse("20181122");
+        System.out.println("date = " + date);
+        // 使用 ThreadLocal加锁
+        ThreadLocal<SimpleDateFormat> local = new ThreadLocal<SimpleDateFormat>() {
+            @Override
+            protected SimpleDateFormat initialValue() {
+                return new SimpleDateFormat("yyyyMMdd");
+            }
+        };
+
+        Callable<Date> task = new Callable<Date>() {
+            @Override
+            public Date call() throws Exception {
+//                return sdf.parse("20181122");
+                // 使用ThreadLocal加锁之后，就不会出现线程安全问题了
+                return local.get().parse("20181122");
+            }
+        };
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(10);
+        List<Future<Date>> dates = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            Future<Date> submit = threadPool.submit(task);
+            dates.add(submit);
+        }
+        for (Future<Date> d : dates) {
+            System.out.println("d.get() = " + d.get());
+        }
+
+        // 新的时间日期类， D-代表在一年中的天数，d-代表在一个月中的天数
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate localDate = LocalDate.parse("20181222", formatter);
+        System.out.println("localDate = " + localDate);
+
+        ZoneId zoneId = ZoneId.of("Asia/Shanghai");
+        System.out.println("zone = " + zoneId);
+        LocalDateTime time = LocalDateTime.now(zoneId);
+        ZonedDateTime zonedDateTime = time.atZone(zoneId);
+        System.out.println("zonedDateTime = " + zonedDateTime);
+
     }
 }
 

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * FileName: ExerciseDemo
@@ -94,4 +95,24 @@ public class ExerciseDemo {
         // 2. 接口中声明对应抽象方法
         public R getValue(T t1, T t2);
     }
+
+    /**
+     * 给定一个数字列表，返回一个由每个数的平方组成的新的列表
+     */
+    @Test
+    public void test4() {
+        List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);
+        List<Integer> nums_square = nums.stream().map(x -> x * x).collect(Collectors.toList());
+        System.out.println("nums_square = " + nums_square);
+    }
+
+    /**
+     * 使用map和reduce确定列表中有多少元素
+     */
+    @Test
+    public void test5() {
+        Integer sum = employees.stream().map(e -> 1).reduce(Integer::sum).get();
+        System.out.println("sum = " + sum);
+    }
+    ;
 }

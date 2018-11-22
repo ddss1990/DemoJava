@@ -233,6 +233,122 @@ Java8
     总结
         中间操作不会单独执行，只有在执行终止操作时，才会一次性的将中间操作全部执行，称为惰性求值。
         map - reduce 模式
+    并行流 - 串行流
+        并行流 - 把一个内容分成多个数据块，并用不同的线程分别处理每个数据块的流
+            parallel() 和 sequential() 进行并行流与串行流的切换
 5 接口中的默认方法和静态方法
+    默认方法
+        在Java8中，接口可以拥有实现了的方法，使用 default 来修饰
+            interface MyInter{
+                default String getName() {  return "Hello World";   }
+            }
+        类优先原则
+            如果一个接口中定义了一个默认方法，另外一个父类或接口中又定义了一个同名的方法时
+                选择父类中的方法。如果一个父类提供了具体的实现，那么接口中具有相同名称和参数的默认方法会被忽略。
+                接口冲突。如果一个父接口提供一个默认方法，另一个接口也提供了一个具有相同名称和参数列表的方法(不顾方法是否为默认方法)，必须覆盖该方法来解决冲突
+    静态方法 
+        在Java8中，可以定义静态方法
+            interface MyInter {
+                public static void hello() {    System.out.println("Hello World");  }
+            }
 6 新时间日期API
+    线程安全
+    LocalDate LocalTime LocalDateTime
+        不可变对象
+        LocalDate - 日期
+        LocalTime - 时间
+        LocalDateTime - 日期和时间
+            使用方式一样
+            LocalDateTime time = LocalDateTime.now();   // 当前时间
+            LocalDateTime time = LocalDateTime.of(2018, 11, 22, 16, 40, 22);    // 指定时间
+            time.plusXXX();     // 加时间或日期
+            time.minusXXX();    // 减时间或日期
+            getYear()/getMonth()....    // 得到年月日等
+    Instant
+        时间戳(以Unix元年1970/01/01 00:00:00 到现在的毫秒值)
+        Instant instant = Instant.now();    // 默认获取的是UTC时区时间
+        instant.atOffset(ZoneOffset.ofHour(8));     // 计算针对UTC时区偏移量N个时区的时间
+    Duration
+        计算两个时间之间的间隔
+        Duration d = Duration.between(Instant, Instant);
+        Duration d = Duration.between(LocalTime, LocalTime);
+        d.toMillis();       毫秒
+        d.getSeconds();     秒
+        d.getNano();        纳秒
+    Period 
+        计算两个日期之间的间隔
+        Period period = Period.between(LocalDate, LocalDate);
+    TemporalAdjuster
+        时间校正器 接口 通过 TemporalAdjusters 去获得实例
+        LocalDateTime time;
+        time.withDayOfMonth();      // 将时间日期等指定为哪一天、年、月等
+        time.with(TemporalAdjuster);
+            TemporalAdjusters.next(DayOfWeek)
+                DayOfWeek.SUNDAY;       // 下一个周日
+            Temporal 
+                // 下一个工作日
+                l -> {
+                    LocalDateTime time = (LocalDateTime) l;
+                    DayOfWeek day = (DayOfWeek) time.getDayOfWeek();
+                    if (day.equals(DayOfWeek.FRIDAY) {
+                        return time.plusDays(3);
+                    } else if (day.equals(DayOfWeek.SATURDAY)){ return time.plusDays(2);
+                    } else if (day.equals(DayOfWeek.SUMDAY)) {  return time.plusDays(1);
+                    } else {    return time.plusDays(1);    }
+                }
+    DateTimeFormatter
+        格式化时间/日期
+        提供了很多默认的格式
+        // 默认格式
+            DateTimeFormatter.ISO_DATE, DateTimeFormatter.ISO_DATE_TIME 等
+            LocalDateTime time = LocalDateTime.now();
+            time.format(formatter);
+        // 自定义格式
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("");
+            formatter.format(time);
+    ZonedDate ZonedTime ZonedDateTime
+        时区
+        Set<String> timeZones = ZoneId.getAvailableZoneIds();    // 所有时区
+        ZoneId zone = ZoneId.of("");  // 指定时区
+        LocalDateTime time = LocalDateTime.now(zone);           // 获得指定时区的时间
+        ZonedDateTime zonedTime = time.atZone(zone);            // 只是在time的基础上构建带时区的时间，并不是将time的时间转为指定时区的时间
 7 其它
+    Optional
+        java.util.Optional
+        是一个容器类，代表一个值存在或不存在，可以避免空指针异常
+        常用方法
+            Optional.of(T t)    创建一个Optioanl实例
+                此方法不能传进去一个NULL值
+            Optional.empty()    创建一个空的Optional实例
+                用空的Optioanl去get()会出现异常
+            Optional.ofNullable(T t)    若t不为空，创建Optioanl实例，否则创建空实例
+            isPresent()         判断是否包含值
+            orElse(T t)         如果调用对象包含值，返回该值，否则返回t
+            orElseGet(Supplier s)       如果调用对象包含值，返回该值，否则返回s 获取的值
+            map(Function f)             如果有值对其处理，并返回处理后的Optional，否则返回Optional.empty()
+            flatMap(Function mapper)    与map 类似，要求返回值必须是Optional
+    重复注解 类型注解
+        重复注解
+            在一个方法或类上，可以重复的定义两个注解
+            想要使用重复注解，需要为注解定义一个容器
+            @interface MyAnnotations {
+                MyAnnotation[] value();
+            }
+            @Repeatable(MyAnnotations.class)    // 需要为注解设置可重复属性，并且指向容器类
+            @Target(TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE, TYPE_PARAMETER)
+            @Retention(RetentionPolicy.RUNTIME)
+            @interface MyAnnotation {
+                String value() default "Hello";
+            }
+            // 通过反射去获得重复注解
+            Method method;
+            MyAnnotation[] annotations = method.getAnnotationByType(MyAnnotation.class);
+        类型注解
+            ElementType.TYPE_PARAMETER   为注解的目标作用区间加上此处
+            // 使用
+            @MyAnnotation("Hello")
+            @MyAnnotation("World")  // 重复注解
+            public void show(@MyAnnotation("abc") String str) { // 类型注解
+                
+            }
+c:\gtk\bin;D:\Tools\Perl\site\bin;D:\Tools\Perl\bin;C:\Program Files (x86)\Qualcomm\QDART\\bin;C:\Program Files (x86)\Java\jdk1.8.0_144\bin;C:\Program Files (x86)\Java\jre1.8.0_151\bin;C:\Users\Chris\AppData\Local\Android\sdk\platform-tools;C:\ProgramData\Oracle\Java\javapath;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;D:\Program Files\Microsoft SQL Server (x86)\90\Tools\binn\;C:\Python27;C:\Python27\Scripts;C:\Program Files\Git\cmd;C:\Program Files\MySQL\MySQL Server 5.7\bin;C:\Users\Chris\AppData\Local\Android\sdk\build-tools\27.0.2;C:\Program Files\Beyond Compare 4;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Users\Chris\AppData\Local\Microsoft\WindowsApps;C:\Program Files (x86)\MySQL\MySQL Server 5.5\bin;%TOMCAT_HOME%\bin;%CATALINA_HOME%\lib;
