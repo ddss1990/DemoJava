@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<!-- 方式3 文档的最后 -->
+<button> Way 3</button>
+<button></button>
+</body>
+</html>
+<!-- 方式3 在HTML文档最后，可以获取到body内的节点，但是不建议使用，因为不符合JS代码习惯 -->
+<script type="text/javascript">
+    var buttons = document.getElementsByTagName("button");
+    alert(buttons.length)
+</script>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript">
+        // 1. 当整个HTML文档全部加载完成后会触发window.onload
+        // 然后会执行后边的方法function
+        window.onload = function (ev) {
+            // 2. 根据TAG去获得所有的button节点，并得到第一个button
+            var btn = document.getElementsByTagName("button")[0];
+            // 3. 为第一个button设置点击事件，点击后执行后边的function
+            btn.onclick = function () {
+                // 4. 弹出一个窗口，显示 Hello world
+                alert("Hello world!")
+            }
+        }
+    </script>
+</head>
+<body>
+<button>Click me</button>
+</body>
+</html>
