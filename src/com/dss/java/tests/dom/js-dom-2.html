@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dom2</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 1. 获得元素节点
+            var nodeName = document.getElementById("name");
+            //alert(nodeName)
+            // 2. 获取元素节点的属性
+            var value = nodeName.value;
+            var name = nodeName.name;
+            var type = nodeName.type;
+            var id = nodeName.id;
+            alert("nodeName = " + nodeName + "\n" +
+                "attr [id = " + id + ", name = " + name + ", value = " + value + ", type = " + type)
+            // 3. 设置元素节点的属性
+            nodeName.value = "Chris"
+
+            // 通过 getAttributeNode 获得属性
+            /*var attr = nodeName.getAttribute("value");
+            var attrNode = nodeName.getAttributeNode("value");
+            alert("attr - " + attr + "\n" +
+                "attrNode - " + attrNode)
+            var value1 = attrNode.nodeValue;
+            var type1 = attrNode.nodeType;
+            alert("value = " + value1 + ", type = " + type1)
+            attrNode.nodeValue = "Hello" // 设置属性值好像没生效*/
+        }
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+name:
+<input type="text" name="userName" id="name" value="dss">
+<br>
+<br>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+
+
+</body>
+</html>

@@ -68,9 +68,84 @@
         // 像 button 是有name属性的，而 li 则没有name属性
         // 实践显示，在IE新版本上的效果和Chrome是一样的，即时像li没有name属性，也是能获取的到的
 3 读写属性节点
+    属性节点 - 某一元素节点的属性
+    通过 . 的方式去获取属性值和设置属性值
+        1. 先获取元素节点
+            var node = document.getElementById("id");
+        2. 再读取属性的值
+            var value = node.value;
+        3. 可以手动设定属性的值
+            node.value = "Hello";
+    通过 getAttributeNode() 获得属性
+        var attr = node.getAttributeNode("value");
+        var value = attr.nodeValue;
+        attr.nodeValue = "Hello"    // 通过此方法设置属性值在Chrome上未生效
 4 读写文本节点
+    元素节点的子节点
+        1. 获得元素节点
+            var nodeCity = document.getElementById("city");
+        2. 获得所有的子节点
+            var childNodesCity = nodeCity.childNodes;   // 此方法不常用，得到的应该是 < 到 < 之间的数量(需要有内容)
+              例如
+                <ul id="city">
+                    <li id="bj" name="beijing">北京</li>
+                    <li>上海</li>
+                    <li>南京</li>
+                    <li>杭州</li>
+                </ul>    // 这样得到的 childNodes 是9个
+                <ul id="city"><li id="bj" name="beijing">北京</li>
+                    <li>上海</li>
+                    <li>南京</li>
+                    <li>杭州</li>
+                </ul>   // 这样得到的 childNodes 就是8个了
+        3. 获得元素节点的所有指定子节点
+            var elementsLiCity = nodeCity.getElementsByTagName("li");
+        4. 获得第一个子节点和最后一个子节点
+            var firstChild = nodeCity.firstChild;
+            var lastChild = nodeCity.lastChild;
+    文本节点
+        文本节点一定是元素节点的子节点
+        1. 获得文本节点
+          a. 如果文本节点有id的话，可以直接获得
+            var nodeText = document.getElementById("text");
+          b. 如果文本节点没有id，其父节点有id，使用父节点获得
+            var element = document.getElementById("parent");
+            var elementChild = element.getElementsByTagName("tag");
+            var nodeText = elementChild.firstChild;
+        2. 得到文本节点的值
+            var value = nodeText.nodeValue;
+        3. 可直接修改文本节点的值
+            nodeText.nodeValue = "Hello";
 5 两个实验
+    1. 点击li，弹出其文本的值
+        var elementsLi = document.getElementsByTagName("li");       // 获取所有的li节点
+        for (var i = 0; i < elementsLi.length; i++) {               // 为每一个li节点设置点击事件
+            elementsLi[i].onclick = function () {
+                // 这里要使用this, 如果使用 elementsLi[i] 的话是得不到数据的
+                // 因为当触发点击事件的时候 i = elementsLi.length , 指向的是空节点，故无法读取到数据
+                alert(this.firstChild.nodeValue)                    // 弹出其文本的值
+            }
+            // 设置点击事件的方法也可以写为
+            elementsLi[i].onclick = click;                          // 不能加括号
+            function click() = {
+                alert();
+            }
+        }
+    2. 点击li节点， 若该节点的值是'^^'开头，就去掉；不是就加上
+        难点
+            判断是否'^^'开头
+                var reg = /^\^{2}/g;            // 正则表达式 以'^^'开头
+            去除
+                str.replace(reg, "");
 6 节点的属性(nodeType、nodeName、nodeValue)
+    任何节点都有这三个属性
+        nodeType 
+            1 - 元素节点   元素节点没有属性值(nodeValue)
+            2 - 属性节点
+            3 - 文本节点   对应的 nodeName=#text
+        nodeName
+            对应节点的名字
+        nodeType, nodeName 是只读的, nodeValue 是可以改变的
 7 第一天复习
 8 创建并加入(元素节点、文本节点)节点
 9 替换节点及自定义的 replaceEach 方法
