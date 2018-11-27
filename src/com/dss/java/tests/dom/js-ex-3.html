@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 3</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 点击任意两个子节点，进行替换
+
+            // 定义一个节点互换的方法
+            function replaceEach(node1, node2) {
+                // 1. 首先得到两个节点的父节点
+                var parentNode1 = node1.parentNode;
+                var parentNode2 = node2.parentNode;
+                // 2. 判断父节点是否存在
+                if (parentNode1 && parentNode2) {
+                    // 3. 存在，进行替换操作
+                    // 3.1 首先是克隆一个子节点，二者选其一即可，但是要保证替换的时候要换对
+                    var cloneNode = node1.cloneNode(true);
+                    // 3.2 开始替换
+                    parentNode2.replaceChild(cloneNode, node2);
+                    parentNode1.replaceChild(node2, node1);
+                    // 需要这一步是因为 cloneNode 没有点击事件，将原先的有点击事件的node替换回来
+                    parentNode2.replaceChild(node1, cloneNode);
+                    // 或者可以再位 cloneNode 设置点击事件
+                    /*cloneNode.onclick = function () {
+                        clickNodeLi(cloneNode)
+                    }*/
+                }
+            }
+
+            var node1, node2;
+
+            // 记录点击的li节点
+            function clickNodeLi(nodeLi) {
+                //alert(nodeLi)
+                if (!node1) {
+                    node1 = nodeLi;
+                } else if (!node2) {
+                    node2 = nodeLi;
+                }
+
+                if (node1 && node2) {
+                    replaceEach(node1, node2)
+                    node1 = null;
+                    node2 = null;
+                }
+            }
+
+            var elements_li = document.getElementsByTagName("li");
+            for (var i = 0; i < elements_li.length; i++) {
+                elements_li[i].onclick = function () {
+                    elements_li[i].index = i;
+                    alert(tmp)
+                    clickNodeLi(this)
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+name:
+<input type="text" name="userName" id="name" value="dss">
+<br>
+<br>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+
+
+</body>
+</html>

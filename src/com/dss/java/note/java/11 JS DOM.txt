@@ -147,8 +147,75 @@
             对应节点的名字
         nodeType, nodeName 是只读的, nodeValue 是可以改变的
 7 第一天复习
+name:
+<input type="text" name="submit_content" id="submit_text" value="Hello world">
+    var submit = document.getElementById("submit_text");
+    name = submit_content, value = Hello world, id = submit_text, type = text
+    nodeName = INPUT, nodeValue = null, nodeType = 1
 8 创建并加入(元素节点、文本节点)节点
+    创建一个元素节点
+        createElement() - 按照给定的标签名创建一个新的元素节点
+            参数 - 只有1个，是被创建的元素节点的名字，是一个字符串
+            返回值 - 是一个指向元素节点的引用指针
+                nodeType 为 1
+            新创建的元素节点不会添加到文档里，而是存在于JS中作为上下文对象
+    创建一个文本节点
+        createTextNode() - 创建一个包含文本的文本节点
+            返回值 - 是一个指向新建文本节点的引用指针
+                nodeType 为 3
+            参数 - 只有一个，为新建文本节点包含的文本字符串
+    为元素节点添加子节点
+        appendChild()
+            element.appendChild(node);
+            参数 - 要添加的子节点
+            调用者 - 元素节点
+            返回值 - 是一个指向新增子节点的引用指针
+        默认是将子节点添加到元素节点的最后
+    # demo1 为<ul>新增一个带文本节点的<li>
+        var nodeLi = document.createElement("li");              // 创建元素节点
+        var nodeText = document.createTextNode("广州");         // 创建文本节点
+        nodeLi.appendChild(nodeText);                           // 将文本节点添加到元素节点中
+        var nodeCity = document.getElementById("city");         // 获得<ul>节点
+        nodeCity.appendChild(nodeLi);                           // 将上边整合好的<li>节点加入到<ul>中
+    # demo2 点击 submit 按钮时,　检查是否选择 type, 若没有选择给出提示: "请选择类型"; 
+    #           检查文本框中是否有输入(可以去除前后空格), 若没有输入,则给出提示: "请输入内容";
+    知识点
+        单选框的判断
+            <radio> 有一个属性 checked="checked" 代表被选中, 这里的 "checked" 可以是任意内容，例如"abc", "false", "true" 都代表被选中
+            通过 if(元素节点.属性名) 来判断是否有该属性，例如 if(radio.checked) | if(node.id)
+        去前后空格
+            需要使用正则
+            var reg = /^\s*|\s*$/g;
+            var newValue = value.replace(reg, "" )
+        <form action="js-dom-6.html">
+            提交 : <input type="submit" value="Submit" id="submit"/>
+            如果想要避免挑战，使用 return false; 进行打断
 9 替换节点及自定义的 replaceEach 方法
+    replaceChild() - 将给定父元素里的一个子节点替换成另外一个子节点
+        var reference = element.replaceChild(newChild, oldChild);
+            返回值 - 是一个指向已被替换的那个子节点的引用指针
+            会有一个移动的功能，如果新子节点存在于别的节点下，使用此方法后，会将原处的子节点移动到现在的父元素节点下
+    互换
+        element1 -> node1; element2 -> node2    ==>    element1 -> node2, element2 -> node1;
+        var nodeClone = node1.cloneNode(boolean)    // 克隆一个子节点
+            true - 可以克隆子节点
+        element2.replaceChild(nodeClone, node2);    // 先将替换element2中的
+        element1.replaceChild(node2, node1);
+    replaceEach(node1, node2)  自定义的方法，用于互换两个节点
+        var element1 = node1.parentNode;            // parentNode 是其父节点
+        var element2 = node2.parentNode;
+        if (element1 && element2) {                 // 需要保证父节点存在
+            var nodeClone = node1.cloneNode(true);  // 克隆一个子节点
+            element2.replaceChild(nodeClone, node2);
+            element1.replaceChild(node2, node1);
+        }
+    保存for循环中的i值
+        var elements_li = document.getElementsByTagName("li");
+        for(int i = 0; i < elements_li.length; i++) {
+            elements_li[i].index = i;               // 通过index来保存i的值
+            elements_li[i].onclick = function () {
+                var index = this.index;             // 获得保存的index的值
+            }
 10 删除节点
 11 添加删除节点的实验
 12 插入节点及自定义的 insertAfter 方法

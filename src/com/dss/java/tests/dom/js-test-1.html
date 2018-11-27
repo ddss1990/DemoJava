@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 3</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 两个单选框，一个文本框，选择单选框后输入内容，进行提交，将内容提交到上边的显示中
+            var value = "  hello world   "
+            var reg = /^\s*|\s*$/g;
+            var newValue = value.replace(reg, "")
+            alert("--" + newValue + "--");
+            //
+            var button_submit = document.getElementById("submit_text");
+
+            var v = button_submit.value;
+            var name = button_submit.name;
+            var id = button_submit.id;
+            var type = button_submit.type;
+            var nodeName = button_submit.nodeName;
+            var nodeValue = button_submit.nodeValue;
+            var nodeType = button_submit.nodeType;
+            var message = "name = " + name + ", value = " + v + " id = " + id + " type = " + type + "\n" +
+                        "nodeName = " + nodeName + " nodeValue = " + nodeValue + " nodeType = " + nodeType;
+            alert(message)
+
+
+            // 提交事件
+            var element_submit = document.getElementById("submit");
+            element_submit.onclick = fun_submit;
+            var element_submitText = document.getElementById("submit_text");
+
+            // Submit
+            function fun_submit() {
+                // 获取输入框的内容
+                var value = element_submitText.value.trim();
+                alert(value)
+            }
+        }
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+name:
+<input type="text" name="userName" id="name" value="dss">
+<br>
+<br>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+
+<br><br>
+<input type="radio" checked="checked" name="add" value="city">城市
+<input type="radio" name="add" value="game">游戏
+name:
+<input type="text" name="submit_content" id="submit_text" value="Hello world">
+<button id="submit">Submit</button>
+
+
+</body>
+</html>

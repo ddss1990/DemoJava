@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dom6</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 点击 submit 按钮时,　检查是否选择 type, 若没有选择给出提示: "请选择类型";
+            //  检查文本框中是否有输入(可以去除前后空格), 若没有输入,则给出提示: "请输入内容";
+            // 使用Button的方式来写
+            // 1. 获取按钮，并设置点击事件
+            var button_submit = document.getElementById("submit");
+            button_submit.onclick = function (ev1) {
+                // 2. 得到所有的类型单选框
+                var elements_type = document.getElementsByName("type");
+                var submit_type = null;
+                for (var i = 0; i < elements_type.length; i++) {
+                    // 3. 判断单选框是否被选中
+                    if (elements_type[i].checked) {
+                        // 4. 得到被选中的值
+                        submit_type = elements_type[i].value
+                        break;
+                    }
+                    // if (elements_type[i])
+                }
+                // 5. 没有被选中，弹出提示
+                if (!submit_type) {
+                    alert("请选择要添加的类型")
+                    return;
+                }
+                // 6. 得到输入框的内容
+                var element_commitContent = document.getElementById("commit_content");
+                var contentValue = element_commitContent.value;
+                // 8. 使用正则去除前后空格
+                var reg = /^\s*|\s*$/g
+                var newValue = contentValue.replace(reg, "");
+                // 7. 判断输入框是否有内容，没有内容给出提示
+                if (!newValue) {
+                    alert("请输入内容")
+                    return;
+                }
+                // alert("--" + newValue + "--")
+                // 9. 新增子节点
+                var element_add = document.createElement("li");
+                var textNode_add = document.createTextNode(newValue);
+                element_add.appendChild(textNode_add)
+                var element_submit = document.getElementById(submit_type);
+                element_submit.appendChild(element_add)
+                // 并为元素节点设置点击事件
+                element_add.onclick = showLi;
+            }
+
+            // 循环为li节点设置点击事件
+            var elements_li = document.getElementsByTagName("li");
+            for (var i = 0; i < elements_li.length; i++) {
+                elements_li[i].onclick = showLi;
+            }
+
+            // 点击Li，执行的方法
+            function showLi() {
+                // alert(this) // object HTMLLIElement
+                var firstChild = this.firstChild; // object Text
+                alert("^_^" + firstChild.nodeValue)
+            }
+        }
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+<br>
+<input type="radio" name="type" value="city"/>城市
+<input type="radio" name="type" value="game"/>游戏
+name:
+<input type="text" name="inputValue" id="commit_content">
+<button id="submit">Submit</button>
+<br>
+<br>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+
+
+</body>
+</html>
