@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ParseXML</title>
+    <script type="text/javascript">
+        window.onload = function (ev) {
+            // alert(window.ActiveXObject) //undefined
+            var xmlDom = getxmlDoc("cities.xml");
+            // alert(xmlDom) [object Element]
+            var provinces = xmlDom.getElementsByTagName("province");
+            alert(provinces.length)
+
+        }//获取xmlDoc对象，兼容浏览器，参考网上代码
+        function getxmlDoc(xmlFile) {
+            var xmlDoc;
+            if (window.ActiveXObject) {
+                xmlDoc = new ActiveXObject('Microsoft.XMLDOM');//IE
+                xmlDoc.async = false;
+                xmlDoc.load(xmlFile);
+            } else if (isFirefox = navigator.userAgent.indexOf("Firefox") > 0) { //火狐
+
+                xmlDoc = document.implementation.createDocument('', '', null);
+                xmlDoc.load(xmlFile);
+            } else { //谷歌
+                var xmlhttp = new window.XMLHttpRequest();
+                xmlhttp.open("GET", xmlFile, false);
+                xmlhttp.send(null);
+                if (xmlhttp.readyState == 4) {
+                    xmlDoc = xmlhttp.responseXML.documentElement;
+                }
+            }
+            return xmlDoc;
+        }
+    </script>
+</head>
+<body>
+<table border="1" cellpadding="2" align="center">
+    <caption>
+        使用DOM显示XML文档
+    </caption>
+    <tr>
+        <th>学号</th>
+        <th>姓名</th>
+        <th>性别</th>
+        <th>民族</th>
+        <th>籍贯</th>
+        <th>专业</th>
+    </tr>
+    <script type="text/javascript">
+        var isie = true;
+        //所读取xml文件
+        var xmlDoc = getxmlDoc("cssxml.xml");
+
+        var stuList = xmlDoc.getElementsByTagName("student");
+        for (var i = 0; i < stuList.length; i++) {
+            document.write("<tr>");
+            var subList = stuList[i].childNodes;
+            for (var j = 0; j < subList.length; j++) {
+                document.write("<td>" + subList[j].text + "</td>");
+            }
+            document.write("</tr>");
+        }
+
+        //获取xmlDoc对象，兼容浏览器，参考网上代码
+        function getxmlDoc(xmlFile) {
+            var xmlDoc;
+            if (window.ActiveXObject) {
+                xmlDoc = new ActiveXObject('Microsoft.XMLDOM');//IE
+                xmlDoc.async = false;
+                xmlDoc.load(xmlFile);
+            }
+            else if (isFirefox = navigator.userAgent.indexOf("Firefox") > 0) { //火狐
+
+                xmlDoc = document.implementation.createDocument('', '', null);
+                xmlDoc.load(xmlFile);
+            }
+            else { //谷歌
+                var xmlhttp = new window.XMLHttpRequest();
+                xmlhttp.open("GET", xmlFile, false);
+                xmlhttp.send(null);
+                if (xmlhttp.readyState == 4) {
+                    xmlDoc = xmlhttp.responseXML.documentElement;
+                }
+            }
+
+            return xmlDoc;
+        }
+
+    </script>
+</table>
+</body>
+</html>

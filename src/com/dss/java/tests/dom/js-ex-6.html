@@ -7,7 +7,73 @@
         // 文档加载完成后触发
         window.onload = function (ev) {
             // 级联选择器
-            var select_province = document.getElementById("province");
+            // 解析器
+            var xmlDoc = getXmlDoc("cities.xml");
+            // 选择器
+            var element_province = document.getElementById("province");
+            element_province.onchange = function (ev1) {
+                // 得到所选择的省名
+                var provinceName = this.value;
+                 alert(this.value)
+                // 从XML中读取该省对应的城市
+                /* 使用Xpath的方式也读取不到数据
+                var provinces = xmlDoc.selectNodes("//province[@name='" + provinceName + "']");
+                alert(provinces.length)*/
+                /* getElementsByTagName 能查询到，而实用 getElementsByName 查询不到
+                var provinces = xmlDoc.getElementsByName(provinceName);
+                alert(provinces)*/
+                var provinces = xmlDoc.getElementsByTagName("province");
+                // alert(provinces.length);
+                for (var i = 0; i < provinces.length; i++) {
+                    // 这里读取到数据有问题，是 [][]
+                    var provinceName_xml = provinces[i].firstChild.nodeValue;
+                    alert(provinceName_xml);
+                    alert(decodeURI(provinceName_xml))
+                    /*if (provinceName == provinces[i].firstChild.nodeValue) {
+                        alert(provinceName)
+                    } else {
+                        alert(i)
+                    }*/
+                }
+
+            }
+        }
+
+        //获取xmlDoc对象，兼容浏览器，参考网上代码
+        function getXmlDoc(xmlFile) {
+            var xmlDoc;
+            if (window.ActiveXObject) {
+                xmlDoc = new ActiveXObject('Microsoft.XMLDOM');//IE
+                xmlDoc.async = false;
+                xmlDoc.load(xmlFile);
+            } else if (isFirefox = navigator.userAgent.indexOf("Firefox") > 0) { //火狐
+                xmlDoc = document.implementation.createDocument('', '', null);
+                xmlDoc.load(xmlFile);
+            } else { //谷歌
+                var xmlhttp = new window.XMLHttpRequest();
+                xmlhttp.open("GET", xmlFile, false);
+                xmlhttp.send(null);
+                if (xmlhttp.readyState == 4) {
+                    xmlDoc = xmlhttp.responseXML.documentElement;
+                }
+            }
+            return xmlDoc;
+        }
+    </script>
+</head>
+<body>
+<select id="province">
+    <option value="">请选择</option>
+    <option value="河北省">河北省</option>
+    <option value="辽宁省">辽宁省</option>
+    <option value="山东省">山东省</option>
+
+</select>
+<select id="city">
+    <option value="">请选择</option>
+</select>
+<!-- 这是第一次写的，解析器一直存在问题的
+var select_province = document.getElementById("province");
             // var doc = parseXML("cities");//这里的doc是空的，解析器有问题
 
             // 17:45
@@ -15,15 +81,21 @@
             var xmlHttp;
             if (window.XMLHttpRequest) {
                 xmlHttp = new XMLHttpRequest();
+                alert("XMLHttpRequest:" + xmlHttp);//[object XMLHttpRequest]
+                /*var xmlhttp = new window.XMLHttpRequest();
+                xmlhttp.open("GET", xmlFile, false);
+                xmlhttp.send(null);
+                if (xmlhttp.readyState == 4) {
+                    xmlDoc = xmlhttp.responseXML.documentElement;
+                }*/
             }
             //打开XML文档  我的这句话是我的XML文档所在的路径
             //之所以后面是false，意思是：关闭异步加载，这样确保在文档完全加载之前解析器不会继续脚本的执行
             xmlHttp.open("GET", "cities.xml", false);
             xmlHttp.send();
-            var xmlDom = xmlHttp.responseXML;
-            alert(xmlDom)
-            alert(xmlDom.rootElement);
-
+            var xmlDom = xmlHttp.responseXML.documentElement;
+            // alert("documentElement:" + xmlDom); // [object Element]
+            // alert(xmlHttp.rootElement); // undefined
 
             // XML解析器
             var xmlDom = createXMLDom();
@@ -79,20 +151,6 @@
             xmldoc.async = false;
             //为了和FireFox一至，这里不能改为False;
             xmldoc.preserveWhiteSpace = true;
-            return xmldoc;
-        }
-    </script>
-</head>
-<body>
-<select id="province">
-    <option value="">请选择</option>
-    <option value="河北省">河北省</option>
-    <option value="辽宁省">辽宁省</option>
-    <option>山东省</option>
-
-</select>
-<select id="city">
-    <option value="">请选择</option>
-</select>
+            return xmldoc; -->
 </body>
 </html>

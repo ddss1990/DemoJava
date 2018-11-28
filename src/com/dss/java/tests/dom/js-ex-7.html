@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 7</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 全选/全不选
+            var message = "".concat("2");
+            alert(message)
+            m = "";
+            m.concat("1");
+            for (var i = 1; i < 10; i++) {
+                m.concat(1);
+            }
+            alert("m = " + m);
+            // 全选/全不选框
+            var checkedAll2 = document.getElementById("checkedAll_2");
+            checkedAll2.onclick = function (ev1) {
+                changeAll(this.checked);
+            }
+            var items = document.getElementsByName("items");
+            var num = 0;
+            for (var i = 0; i < items.length; i++) {
+                items[i].onclick = function () {
+                    if (this.checked) {
+                        num++;
+                    } else {
+                        num--;
+                    }
+                    // alert(num);
+                    checkedAll2.checked = num == items.length;
+
+                }
+            }
+
+            var btn_checkAll = document.getElementById("CheckedAll");
+            var btn_checkNo = document.getElementById("CheckedNo");
+            btn_checkAll.onclick = function (ev1) {
+                changeAll(true);
+            }
+            btn_checkNo.onclick = function (ev1) {
+                changeAll(false);
+            }
+            var btn_checkRev = document.getElementById("CheckedRev");
+            btn_checkRev.onclick = function (ev1) {
+                for (var i = 0; i < items.length; i++) {
+                    items[i].checked = !this.checked;
+                }
+            }
+            var btn_send = document.getElementById("send");
+            btn_send.onclick = function (ev1) {
+                var sports = "";
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].checked) {
+                        var sport = items[i].value;
+                        //sport.concat(sports);
+                        sports += sport;
+                        alert(sport)
+                    }
+                }
+                alert("喜爱的运动是：" + sports);
+            }
+        }
+
+        function changeAll(isCheck) {
+            var items = document.getElementsByName("items");
+            for (var i = 0; i < items.length; i++) {
+                items[i].checked = isCheck;
+            }
+        }
+    </script>
+</head>
+<body>
+<form method="post" action="">
+    你爱好的运动是？<input type="checkbox" id="checkedAll_2"/>全选/全不选
+
+    <br/>
+    <input type="checkbox" name="items" value="足球"/>足球
+    <input type="checkbox" name="items" value="篮球"/>篮球
+    <input type="checkbox" name="items" value="羽毛球"/>羽毛球
+    <input type="checkbox" name="items" value="乒乓球"/>乒乓球
+    <br/>
+    <input type="button" id="CheckedAll" value="全　选"/>
+    <input type="button" id="CheckedNo" value="全不选"/>
+    <input type="button" id="CheckedRev" value="反　选"/>
+    <input type="button" id="send" value="提　交"/>
+</form>
+</body>
+</html>

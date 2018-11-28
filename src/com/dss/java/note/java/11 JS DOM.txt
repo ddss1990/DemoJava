@@ -322,7 +322,8 @@ name:
     XPath
         doc.selectNodes("//province[@name='" + this.value + "']");
 16 实验：Checkbox 全选
-
+    多选框
+        <input type="checkbox" />
 
 
 
