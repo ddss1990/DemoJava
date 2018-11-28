@@ -12,3 +12,4 @@ lib/c3p0-0.9.1.2-javadoc/
 bin/
 c3p0-config.xml.bak
 .gitignore
+Web/

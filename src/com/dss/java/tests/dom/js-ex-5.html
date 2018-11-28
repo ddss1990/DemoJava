@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 5</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 功能：添加学生信息，删除学生信息，显示学生信息
+            // 学生：Name, Age, Email
+
+            // 1. 处理delete事件
+            // 1.1 得到所有的a节点，需要根据table去获得
+            var elementTable = document.getElementById("stu_info");
+            var elements_a = elementTable.getElementsByTagName("a");
+            // 1.2 设置点击事件
+            for (var i = 0; i < elements_a.length; i++) {
+                elements_a[i].index = i;
+                elements_a[i].onclick = function () {
+                    deleteStu(this);
+                    return false;
+                }
+            }
+
+            // Submit
+            var element_submit = document.getElementById("stu_submit");
+            element_submit.onclick = function (ev1) {
+                var stuName = document.getElementById("stu_name").value;
+                // var stuEmail = stuName.concat("@abc.com");
+                var stuAge = document.getElementById("stu_age").value;
+                var stuEmail = document.getElementById("stu_email").value;
+                if (stuName && stuAge && stuEmail) {
+                    // 新建信息节点
+                    addStuInfo(stuName, stuAge, stuEmail);
+                } else {
+                    alert("请完善学生信息！")
+                    return;
+                }
+
+            }
+
+        }
+
+        // 添加学生信息
+        function addStuInfo(name, age, email) {
+            // 学生节点
+            var node_stu = document.createElement("tr");
+            // name age email
+            var node_stuName = document.createElement("td");
+            node_stuName.appendChild(document.createTextNode(name))
+            var node_stuAge = document.createElement("td");
+            node_stuAge.appendChild(document.createTextNode(age));
+            var node_stuEmail = document.createElement("td");
+            node_stuEmail.appendChild(document.createTextNode(email));
+            node_stu.appendChild(node_stuName)
+            node_stu.appendChild(node_stuAge)
+            node_stu.appendChild(node_stuEmail)
+            // 带删除的超链接节点 <td><a href="deleteStu?id=003">Delete</a></td>
+            var node_stuDel = document.createElement("td");
+            var node_stuA = document.createElement("a");
+            var no = "xxx";
+            node_stuA.href = "deleteStu?id=".concat(no);
+            node_stuA.appendChild(document.createTextNode("Delete"));
+            node_stuDel.appendChild(node_stuA);
+            // 为节点A设置点击事件
+            node_stuA.onclick = function (ev) {
+                deleteStu(this);
+                return false;
+            }
+            node_stu.appendChild(node_stuDel);
+
+            // 将打包好的学生节点添加到Table中
+            var node_stuRoot = document.getElementById("stu_info").getElementsByTagName("tbody")[0];
+            node_stuRoot.appendChild(node_stu);
+        }
+
+        // 删除学生信息
+        function deleteStu(node_a) {
+            // node_a - <a>节点 显示的是href中的内容
+            // node_a.parentNode - <td>节点 object HTMLTableCellElement
+            // node_a.parentNode.parentNode - <tr>节点 object HTMLTableRowElement
+            // node_a.parentNode.parentNode.firstChild - 第一个<td>节点
+            // node_a.parentNode.parentNode.firstChild.firstChild - 第一个<td>节点的文本节点，这里需要注意的是
+            /**
+             * 格式须保持
+             * <tr><td> 而不能使用
+             *  <tr>
+             *      <td>   这种方式得到的firstChild为null
+             */
+                // node_a.parentNode.parentNode.firstChild.firstChild.nodeValue - 这个值才对应于学生的姓名
+                // 0. 得到要删除的<tr>节点
+            var node_delete = node_a.parentNode.parentNode;
+            // 1.0 得到<tr>下的第一个<td>节点
+            var node_firstTd = node_delete.getElementsByTagName("td")[0];
+            // 1. 得到学生姓名
+            // var stuName = node_delete.firstChild.firstChild.nodeValue;  // 这种方法如果格式化代码之后，就不能获取到了，改为下边的方式
+            var stuName = node_firstTd.firstChild.nodeValue;
+            //alert(stuName)
+            // 2. 弹出对话框，供选择是否删除
+            var isDelete = confirm("确定要删除" + stuName + "的信息吗？");
+            //alert(isDelete)
+            if (isDelete) {
+                node_delete.parentNode.removeChild(node_delete);
+            }
+        }
+    </script>
+</head>
+<body>
+<center>
+    <br><br>
+    添加新的学生信息
+    <br><br>
+    name:<input type="text" id="stu_name" name="stuName">&nbsp;&nbsp;
+    age:<input type="text" id="stu_age" name="stuAge">&nbsp;&nbsp;
+    email:<input type="text" id="stu_email" name="stuEmail">
+    <br><br>
+    <input type="submit" value="Submit" id="stu_submit">
+    <br><br>
+    <hr> <!-- hr 是一条横线 -->
+
+    <!-- 信息展示 -->
+    <br><br>
+    <table id="stu_info" border="1" cellpadding="5" cellspacing="0">
+        <tbody>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Email</th>
+            <th>&nbsp;</th>
+        </tr>
+        <tr>
+            <td>Tom</td>
+            <td>18</td>
+            <td>tom@abc.com</td>
+            <td><a href="deleteStu?id=001">Delete</a></td>
+        </tr>
+        <tr>
+            <td>Jerry</td>
+            <td>19</td>
+            <td>jerry@abc.com</td>
+            <td><a href="deleteStu?id=002">Delete</a></td>
+        </tr>
+        <tr>
+            <td>Jimmy</td>
+            <td>22</td>
+            <td>jimmy@abc.com</td>
+            <td><a href="deleteStu?id=003">Delete</a></td>
+        </tr>
+        </tbody>
+    </table>
+</center>
+</body>
+</html>

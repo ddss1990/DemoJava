@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dom10</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 添加子节点，添加到指定位置
+            // insertBefore
+            // alert(1)
+            var element_city = document.getElementById("city");
+            var node_bj = document.getElementById("bj");
+            var node_ra = document.getElementById("ra");
+            //var reference = element_city.insertBefore(node_ra, node_bj);
+            alert(node_bj.nextSibling.nextSibling.firstChild.nodeValue)
+
+            insertAfter(node_ra, node_bj);
+        }
+
+        // 自定义一个 insertAfter，插入到目标节点后
+        function insertAfter(newNode, targetNode) {
+            var parentNode = targetNode.parentNode;
+            // 存在父节点
+            alert(parentNode)
+            if (parentNode) {
+                var lastChild = parentNode.lastChild;
+                // 如果目标节点是最后节点，就把新节点添加到最后
+                if (targetNode == lastChild) {
+                    parentNode.appendChild(newNode);
+                } else { // 如果不是最后的节点，就是获得下一节点，通过 insertBefore 插入
+                    parentNode.insertBefore(newNode, targetNode.nextSibling);
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+<br>
+<br>
+<br>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+
+
+</body>
+</html>

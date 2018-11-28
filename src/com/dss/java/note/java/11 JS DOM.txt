@@ -152,6 +152,10 @@ name:
     var submit = document.getElementById("submit_text");
     name = submit_content, value = Hello world, id = submit_text, type = text
     nodeName = INPUT, nodeValue = null, nodeType = 1
+
+    nodeValue, value
+        nodeValue 是一个节点的属性，所有节点都有该属性，用于获取文本节点的文本值
+        value 只有一些节点才有这些属性，用于获取HTML表单元素的值
 8 创建并加入(元素节点、文本节点)节点
     创建一个元素节点
         createElement() - 按照给定的标签名创建一个新的元素节点
@@ -189,7 +193,7 @@ name:
             var newValue = value.replace(reg, "" )
         <form action="js-dom-6.html">
             提交 : <input type="submit" value="Submit" id="submit"/>
-            如果想要避免挑战，使用 return false; 进行打断
+            如果想要避免跳转，使用 return false; 进行打断
 9 替换节点及自定义的 replaceEach 方法
     replaceChild() - 将给定父元素里的一个子节点替换成另外一个子节点
         var reference = element.replaceChild(newChild, oldChild);
@@ -217,9 +221,119 @@ name:
                 var index = this.index;             // 获得保存的index的值
             }
 10 删除节点
+    removeChild() - 从一个给定元素节点里删除一个节点，该节点包含的所有子节点将同时被删除
+        var reference = element.removeChild(node);
+            返回值 - 是一个指向已删除的子节点的引用指针
+            调用者 - element, 父节点
+            参数 - 子节点
+        如果想删除一个节点，但不知道它的父节点，可以使用 parentNode 属性来获得
+    confirm("message") - 弹出一个选择对话框，有两个选项[确定][取消]
+        返回值 - 点击[确定]返回true, 点击[取消]返回false
+
 11 添加删除节点的实验
+    知识点
+        表单显示
+            <table id="table" border="1" cellpadding="5" cellspacing=0>
+                <tbody>
+                    <tr>        // 表头
+                        <th>Name</th>   // th - 标题，加黑加粗 
+                        <th>Age</th>
+                        <th>Email</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                    <tr>
+                        <td>Tom</td>    // td - 正常格式
+                        ...
+                        <td><a href="deleteEmp?id=001">Delete</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        处理Delete超链接
+            var elementsA = document.getElementById("table")    // 先得到Table
+                                    .getElementsByTagName("a")  // 得到Table中的所有的a子节点
+            for(var i = 0; i < elementsA.length; i++) {
+                elementsA[i].onclick = function () {            // 处理每个A节点的点击事件
+                    return false;                               // 结束跳转，使超链接失效
+                }
+            }
+        向Table中添加数据
+            找到根节点，创建好子节点，使用 appendChild() 插入
 12 插入节点及自定义的 insertAfter 方法
+    insertBefore() - 把一个节点插入到给定元素节点的给定子节点前面
+        var reference = element.insertBefore(newNode, targetNode);
+            将 newNode 节点插入到元素节点 element 中并出现在 targetNode 的前面。 targetNode 必须是 element 的一个子节点
+        附带有移动的功能，如果 newNode 是已存在的节点的话，就相当于把该节点移动到 targetNode 前
+    insertBefore() - 自定义的方法，将新节点插入到目标节点前
+        targetNode.nextSibling - 获得下一个兄弟节点
+            例子中得到的兄弟节点并不是 <li>上海</li>
+            而是 <li id="bj" name="beijing">北京</li>
+                <li>上海</li>   之间的内容，就是 </li> - <li> 这一部分，是回车符
 13 innerHTML 属性
+    innerHTML - 用来读写某给定元素里的HTML内容
+        就是该节点对应的HTML语言
+    innerText - 
+        例如读取 city 的 innerText 就是
+            北京
+            上海
+            ...
+          是所有的文本内容集合
 14 第二天小结
+    1. createElement createTextNode
+    2. appendChild
+    3. replaceChild replaceEach(自定义方法)
+    4. removeChild
+    5. insertBefore insertAfter(自定义方法)
+    6. innerHTML innerText
 15 实验：Select 级联选择
+    onchange 响应
+        province.onchange = function () {
+            this.value      // 获得选择的值
+        }
+    加载XML文件
+        // 只支持IE
+        function parseXML(fileName) {
+            if (window.ActiveXObject) {
+                var doc = new ActiveXObject("Microsoft.XMLDOM");    // DOM解析器
+                doc.async = "false";
+                doc.load(fileName);         // 加载XML文档，获得文档对象
+                return doc;
+            }
+        }
+        //生XML对象 进阶版，可以获得Chrome的解析器
+        function createXMLDom() {
+            if (window.ActiveXObject)
+                var xmldoc = new ActiveXObject("Microsoft.XMLDOM");
+            else if (document.implementation && document.implementation.createDocument)
+                var xmldoc = document.implementation.createDocument("", "doc", null);
+            xmldoc.async = false;
+            //为了和FireFox一至，这里不能改为False;
+            xmldoc.preserveWhiteSpace = true;
+            return xmldoc;
+        }
+    填充数据到Select
+        利用 appendChild 去添加子节点的方式填充数据
+        填充之前也将数据先清空，避免数据干扰
+        清空数据
+            从 1~length 会出现节点清不干净的情况
+            原因是因为删除 1 的时候，原来的 2 变为了 1 ，循环会继续往下走，走到了 2 ，那么变为 1 的节点就留下来了。
+            for (var i = 1; i < length; i++) {
+                parent.removeChild(nodes[1]);
+            }
+    XPath
+        doc.selectNodes("//province[@name='" + this.value + "']");
 16 实验：Checkbox 全选
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

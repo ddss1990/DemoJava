@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 6</title>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        window.onload = function (ev) {
+            // 级联选择器
+            var select_province = document.getElementById("province");
+            // var doc = parseXML("cities");//这里的doc是空的，解析器有问题
+
+            // 17:45
+            // alert(window.XMLHttpRequest)
+            var xmlHttp;
+            if (window.XMLHttpRequest) {
+                xmlHttp = new XMLHttpRequest();
+            }
+            //打开XML文档  我的这句话是我的XML文档所在的路径
+            //之所以后面是false，意思是：关闭异步加载，这样确保在文档完全加载之前解析器不会继续脚本的执行
+            xmlHttp.open("GET", "cities.xml", false);
+            xmlHttp.send();
+            var xmlDom = xmlHttp.responseXML;
+            alert(xmlDom)
+            alert(xmlDom.rootElement);
+
+
+            // XML解析器
+            var xmlDom = createXMLDom();
+            alert(xmlDom);// [object XMLDocument]
+            // 上边都还没问题，从这开始下边就报错了
+            var documentElement = xmlDom.documentElement;
+            alert(documentElement.nodeName);// [object Element]
+            xmlDom.load("cities.xml");
+            var elementsByTagName = documentElement.getElementsByTagName("province");
+            alert(elementsByTagName);
+            var root = xmlDom.documentElement;
+            alert(root);
+
+
+            // 上边的解析器有问题，换一种方式创建解析器
+            // 这种方式创建的解析器需要传入字符串，不能传入文件，故也不行
+            /*var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString("cities", "text/xml");
+            var elementsByTagName = xmlDoc.getElementsByTagName("province");
+            alert(elementsByTagName.length);
+            // alert(xmlDoc);*/
+
+            select_province.onchange = function (ev1) {
+                var provinceName = this.value;
+                if (provinceName == "") {
+                    return;
+                }
+                // 根据选择的省份获得城市
+                alert(provinceName)
+                //XPath
+                //var nodes = xmlDom.selectNodes("//province[@name='" + provinceName + "']");
+                //alert(nodes)
+                var elements_province = xmlDom.getElementsByName(provinceName);
+                alert(elements_province.length);
+            }
+        }
+
+        function parseXML(fileName) {
+            if (window.ActiveXObject) {
+                var doc = new ActiveXObject("Microsoft.XMLDOM");
+                doc.async = false;
+                doc.load(fileName);
+                return doc;
+            }
+        }
+
+        //生XML对象。
+        function createXMLDom() {
+            if (window.ActiveXObject)
+                var xmldoc = new ActiveXObject("Microsoft.XMLDOM");
+            else if (document.implementation && document.implementation.createDocument)
+                var xmldoc = document.implementation.createDocument("", "", null);
+            xmldoc.async = false;
+            //为了和FireFox一至，这里不能改为False;
+            xmldoc.preserveWhiteSpace = true;
+            return xmldoc;
+        }
+    </script>
+</head>
+<body>
+<select id="province">
+    <option value="">请选择</option>
+    <option value="河北省">河北省</option>
+    <option value="辽宁省">辽宁省</option>
+    <option>山东省</option>
+
+</select>
+<select id="city">
+    <option value="">请选择</option>
+</select>
+</body>
+</html>

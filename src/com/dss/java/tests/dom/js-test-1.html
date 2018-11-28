@@ -22,8 +22,11 @@
             var nodeValue = button_submit.nodeValue;
             var nodeType = button_submit.nodeType;
             var message = "name = " + name + ", value = " + v + " id = " + id + " type = " + type + "\n" +
-                        "nodeName = " + nodeName + " nodeValue = " + nodeValue + " nodeType = " + nodeType;
+                "nodeName = " + nodeName + " nodeValue = " + nodeValue + " nodeType = " + nodeType;
             alert(message)
+
+            var elementCity = document.getElementById("city");
+            alert(elementCity.parentNode) // [object HTMLBodyElement]
 
 
             // 提交事件
