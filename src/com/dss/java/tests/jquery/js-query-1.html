@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery 1</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // $(function(){}) 等同于 window.onload = function () {}
+        $(function () {
+            // JQuery 对象与 DOM 对象
+            var $buttons = $("button");
+            // alert($buttons.length)  // 得到 button 的个数
+            // 设置点击事件
+            $buttons.click(function () {
+                // alert("Hello world");
+                // alert(this.firstChild.nodeValue);
+
+                // JQuery对象转为DOM对象
+                var button1 = $buttons[0];      // 第一种方法
+                var button2 = $buttons.get(0);  // 第二种方法
+                // DOM对象转为JQuery对象
+                var $btn = $(button1);
+
+                var nodeValue_dom = this.firstChild.nodeValue;
+                var nodeValue_jQuery = $(this).text();
+                alert("Dom get value:" + nodeValue_dom + "\nJQuery get value:" + nodeValue_jQuery);
+            })
+        })
+    </script>
+</head>
+<body>
+<button>Click me</button>
+<br><br>
+<button>Click me 2</button>
+</body>
+</html>
