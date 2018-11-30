@@ -54,8 +54,63 @@
         $("div").css("background", "#00ff00");          // 修改所有的div元素的 background 属性
         $("*").css("background", "#eeeeee");            // 修改所有元素的 background 属性
         $("span, #two").css("background", "#ee44ff");   // 修改所有的span元素和id为two的元素的 background 属性
-
-
+    层次选择器
+        通过DOM元素之间的层次关系来获取特定元素，例如后代元素，子元素，相邻元素，兄弟元素
+        $("ancestor descendant")    所有的后代元素    集合元素
+        $("parent > child")         所有的子元素      集合元素
+        $("prev + next")            下一个元素        集合元素
+        $("prev ~ siblings")        prev后的所有兄弟元素    集合元素
+        后代元素 与 子元素 的区别
+            后代元素包括所有的，包括子元素的子元素
+            子元素只有其子
+        ~ siblings 与 siblings() 的区别
+            ~ siblings : 代表该节点之后的所有兄弟元素
+            siblings() : 代表该节点的所有兄弟元素，包括之前的，但不包括其本身
+      练习
+        $("body div").css("background", "#ff0000");     // 修改body内所有的div元素的 background 属性
+        $("body > div").css("background-color", "#0000ff");     // 修改body内子元素是div的 background 属性
+        $("#one + div").css("background", "#00ff00");   // 修改id为one的下一个div的 background 属性
+            // 如果 div 和 id为one 的不相邻，则选择器无效
+        $("#two ~ div").css("background", "#eeeeee");   // 修改id为two的后边所有div的 background 属性
+        $("#two").siblings("div").css("background", "#ee44ff");         // 修改id为two的所有兄弟元素的 background 属性 不包括自己
+        $("#one").nextAll("span:first").css("background", "#44eeff");   // 修改id为one的下一个span的 background 属性
+        $("#two").prevAll("div").css("background", "#ffee44");          // 修改id为two的前边所有的div的 background 属性
+    过滤选择器
+        通过特定的过滤规则来筛选出所需的DOM元素(以 : 开头)
+        基本过滤
+            :first      选取第一个元素                         单个元素组成的集合
+            :last       选取最后一个元素                       集合元素
+            :not(seletor)   去除所有与给定选择器匹配的元素     集合元素
+            :even       选取索引是偶数的所有元素，索引从0开始  集合元素
+            :odd        选取索引是奇数的所有元素，索引从0开始  集合元素
+            :eq(index)  选取索引等于index的元素，索引从0开始   集合元素
+            :gt(index)  选取索引大于index的元素，索引从0开始   集合元素
+            :lt(index)  选取索引小于index的元素，索引从0开始   集合元素
+            :header     选取所有的标题元素，h1, h2 等          集合元素
+            :animated   选取当前正在执行动画的所有元素         集合元素
+          练习
+            $("div:first").css("background", "#ff0000");        // 修改第一个div的 background 属性
+            $("div:last").css("background-color", "#0000ff");   // 修改最后一个div的 background 属性
+            $("div:not(.one)").css("background", "#00ff00");    // 修改类不是one的所有div的 background 属性
+            $("div:even").css("background", "#eeeeee");         // 修改索引是偶数的div的 background 属性; odd 用法相同
+            $("div:gt(3)").css("background", "#44eeff");        // 修改索引大于3的div的 background 属性; lt,eq 用法相同
+            $(":header").css("background", "#66aa66")           // 修改所有标题的 background 属性
+            $("div:animated").css("background", "#aa6666")      // 修改当前正在执行动画的div的 background 属性
+        内容过滤
+            过滤规则主要体现在所包含的子元素和文本内容上
+            :contains(text)     选取含有文本内容为text的元素        集合元素
+            :empty              选取不包含元素或文本的空元素        集合元素
+            :has(seletor)       选取含有选择器所匹配的元素的元素    集合元素
+            :parent             选取含有子元素或者文本的元素        集合元素
+          练习
+            $("div:contains('di')").css("background", "#ff0000");   // 修改含有文本'di'的div的 background 属性
+            $("div:empty").css("background-color", "#0000ff");      // 修改不包含子元素(或文本)的div的 background 属性
+            $("div:has(.mini)").css("background", "#00ff00");       // 修改含有类为mini的div的 background 属性; 修改的是div,而不是mini
+            $("div:parent").css("background", "#eeeeee");           // 修改含有子元素(或文本)的所有div的 background 属性
+        可见性过滤
+        属性过滤
+        子元素过滤
+        表单对象属性过滤
 
 
 
@@ -91,6 +146,13 @@
         display: none;
     }
 </style>
+<script type="text/javascript">
+    function anmateIt() {
+        $("#mover").slideToggle("slow", anmateIt);
+    }
+
+    anmateIt();
+</script>
 <body>
 <div class="one" id="one">
     id为one, class为one的div
