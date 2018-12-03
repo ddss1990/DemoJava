@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>可见性过滤选择器</title>
+    <style type="text/css">
+        /*定义一些格式*/
+        div, span, p {
+            width: 140px;
+            height: 140px;
+            margin: 5px;
+            background: #CCCCFF;
+            border: #000000 1px solid;
+            float: left;
+            font-size: 17px;
+            font-family: Verdana;
+        }
+
+        div.mini {
+            width: 55px;
+            height: 55px;
+            background-color: #CCCCFF;
+            font-size: 12px;
+        }
+
+        div.hide {
+            display: none;
+        }
+    </style>
+    <!-- 导入 JQuery库 -->
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // $(function(){}) 等同于 window.onload = function () {}
+        // $(document).read(function () {
+        $(function () {
+            // 可见性过滤选择器
+            // btn1 - 选取所有可见的的div元素
+            $("#btn1").click(function () {
+                // alert(this.value)
+                $("div:visible").css("background", "#ff0000");
+            })
+            // btn2 - 选择所有不可见的div空元素
+            $("#btn2").click(function () {
+                // $("div:empty").css("background-color", "#0000ff");
+                var length = $("div:hidden").length;
+                $("div:hidden").show(2000).css("background-color", "#0000ff");  // 让不可见的元素显示出来2秒
+            })
+            // btn3 -  选择所有不可见的input元素
+            $("#btn3").click(function () {
+                // $("div:has(.mini)").css("background", "#00ff00");
+                // val() - 表单元素的属性值
+                alert($("input:hidden").attr("value"));
+            })
+            // reset
+            $("#reset").click(function () {
+                $("div, span").css("background", "#CCCCFF");
+                $("html, body").css("background", "#FFFFFF")
+            })
+        })
+    </script>
+</head>
+<body>
+<input type="button" value="选取所有可见的的div元素" id="btn1"/>
+<input type="button" value="选择所有不可见的div空元素" id="btn2"/>
+<input type="button" value="选择所有不可见的input元素" id="btn3"/>
+<input type="button" value="Reset" id="reset"/>
+<br><br>
+<div class="one" id="one">
+    id为one, class为one的div
+    <div class="mini">class为mini</div>
+</div>
+<div class="one" id="two" title="test">
+    id为two, class为one, title为test的div
+    <div class="mini" title="other">class为mini,title为other</div>
+    <div class="mini" title="test">class为mini,title为test</div>
+</div>
+<div class="one" id="three">
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini"></div>
+</div>
+<div class="one">
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini" title="test">class为mini,title为test</div>
+</div>
+<div style="display:none" class="none">style的display为'none'的div</div>
+<div class="hide">class为"hide"的div</div>
+<div>包含input的type为'hidden'的div<input type="hidden" size="8" value="type为'hidden'的input"/></div>
+<span id="span">^^span元素^^</span>
+
+</body>
+</html>

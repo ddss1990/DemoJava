@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery Dom2</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 使用JQuery 创建节点，插入节点
+        $(function () {
+            // 1. 创建并插入节点 - 子节点
+            $("<li>appendTo</li>").appendTo($("#city"));
+            $("#city").append("<li>append</li>");
+            $("<li>prependTo</li>").prependTo($("#game"));
+            $("#game").prepend("<li>prepend</li>");
+            // 插入节点 - 兄弟节点
+            $("<li>insertAfter</li>").insertAfter($("#ra"));
+            $("#ra").after("<li>after</li>");
+            $("<li>insertBefore</li>").insertBefore($("#bj"));
+            $("#bj").before("<li>before</li>");
+        })
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+<br><br>
+name:<input type="text" name="username" value="Tom"/>
+
+</body>
+</html>

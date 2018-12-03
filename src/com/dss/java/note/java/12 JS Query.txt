@@ -9,6 +9,7 @@
     <script type="text/javascript">
         // 全选/全不选
         // $(function(){})  相当于 window.onload 代码写在{}里
+        // $(document).read(function () { 的简写是 $(function)() {
         $(function(){
             $(#"checkedAll_2").click(function(){
                 var isCheck = this.checked;
@@ -22,6 +23,7 @@
     </script>
 1 JQuery 和 DOM
     JQuery
+        是JS的一个函数库，使用起来非常方便。
         是通过 $() 包装DOM对象后产生的对象
         在变量前加上$    var $variable = JQuery对象     var variable = DOM对象
         JQuery对象是JQuery独有的。 JQuery对象无法使用DOM对象的任何方法，DOM对象也不能使用JQuery里的任何方法。
@@ -108,14 +110,127 @@
             $("div:has(.mini)").css("background", "#00ff00");       // 修改含有类为mini的div的 background 属性; 修改的是div,而不是mini
             $("div:parent").css("background", "#eeeeee");           // 修改含有子元素(或文本)的所有div的 background 属性
         可见性过滤
+            根据元素的可见和不可见状态来选择相应的元素
+            :hidden     选取所有不可见的元素      集合元素
+            :visible    选取所有可见的元素        集合元素    
+          练习
+            $("div:visible").css("background", "#ff0000");          // 修改所有可见的div的 background 属性
+            $("div:hidden").show(2000).css("background-color", "#0000ff");      // 将所有不可见的div显出出来，从不可见到显示的时间为2秒，并修改 background 属性
+            $("input:hidden").attr("value");                        // 获得所有不可见input元素的属性值
+            $("input:hidden")val();                                 // 获得所有不可见input元素的属性值
         属性过滤
+            通过元素的属性来获取相应的元素
+            [attribute]         选取拥有此属性的元素                  集合元素
+            [attribute=value]   选取指定属性的值为value的元素         集合元素
+            [attribute!=value]  选取指定属性的值不等于value的元素     集合元素
+            [attribute^=value]  选取指定属性的值以value开头的元素     集合元素
+            [attribute$=value]  选取指定属性的值以value结尾的元素     集合元素
+            [attribute*=value]  选取指定属性的值含有value的元素       集合元素
+            [seletor1][seletor2]...[seletorN]   用属性选择器合并成一个复合属性选择器，满足多个条件，每选择一次，缩小一次范围     集合元素    
+          练习
+            $("div[title]").css("background", "#ff0000");               // 修改含有title属性的div的 background 属性
+            $("div[title='test']").css("background-color", "#0000ff");  // 修改title属性值为'test'的div的 background 属性
+            $("div[id][title*='es']").css("background", "#ffee44");     // 修改含有id属性，title属性值含有'es'的div的 background 属性
         子元素过滤
+            :nth-child(index/even/odd/equation)     选取每个父元素下的第index个子元素或者奇偶元素(index从1开始)        集合元素
+                :nth-child(even/odd)    选取每个父元素下的索引值为偶/奇的元素
+                :nth-child(2)           选取每个父元素下的索引值为2的元素
+                :nth-child(3n)          选取每个父元素下的索引值是3的倍数的元素
+                :nth-child(3n+1)        选取每个父元素下的索引值是3n+1的元素
+            :first-child        选取每个父元素的第一个子元素      集合元素
+            :last-child         选取每个父元素的最后一个子元素    集合元素
+            :only-child         匹配某元素是其父元素的唯一子元素的元素     集合元素
+            读取子元素，需要在选择器前加一个空格
+          练习
+            $("div.one :nth-child(2)").css("background", "#ff0000");        // 修改class为one的div的第二个子元素的 background 属性
+            $("div.one :first-child").css("background-color", "#0000ff");   // 修改class为one的div的第一个子元素的 background 属性
+            $("div.one :last-child").css("background", "#00ff00");          // 修改class为one的div的最后一个子元素的 background 属性
+            $("div.one :only-child").css("background", "#eeeeee");          // 修改class为one的div的有且只有一个子元素的 background 属性
         表单对象属性过滤
-
-
-
-
-
+            对表单元素进行过滤
+            :enabled        选取所有可用元素            集合元素
+            :disabled       选取所有不可用元素          集合元素
+            :checked        选取所有被选中的元素(单选框,多选框)     集合元素
+            :selected       选取所有被选中的选项元素(下拉列表)      集合元素
+    表单选择器
+        :input      选取所有的<input>,<textarea>,<select>,<button>元素     集合元素
+        :text       选取所有的单行文本框      集合元素
+        :password   选取所有的密码框元素      集合元素
+        :radio      选取所有的单选框          集合元素
+        :checkbox   选取所有的多选框          集合元素
+        :submit     选取所有的提交按钮        集合元素
+        :image      选取所有的图象按钮        集合元素
+        :reset      选取所有的重置按钮        集合元素
+        :file       选取所有的上传域          集合元素
+        :hidden     选取所有的不可见元素      集合元素
+        练习
+            $(":text:enabled").attr("value", "Hello World");    // 修改可用的单行文本框的value属性
+            $(":checkbox[name='newsletter']:checked").length;   // 计算name为newsletter的多选框被选中的个数
+            $("select :checked").each(function () {             // 被选中的下拉框 因为选中的是<option>节点，所以要有个空格
+                alert(this.value);          // each()函数用于遍历得到的选中节点数组，在函数里 this 就是每个被选中的DOM节点对象
+            })
+3 几个常用方法
+    val()   获取或设置表单元素的value属性值
+        val() - 获取值
+        val("") - 设置值
+    attr()  获取或设置表单元素的属性值
+        attr(key) - 获取值
+        attr(key, value) - 设置值
+    each()  对JQuery对象进行遍历，参数为function，函数内的this代表正在遍历的DOM对象
+    text()  和val()方法类似，
+        text() - 获取元素节点的文本子节点的值
+        text("") - 设置元素节点的文本子节点的值
+4 知识点练习
+    1. 隐式迭代
+        $("p").click(function(){        // 为所有的P节点都添加了click函数
+            // 在函数内，this是DOM对象，所有如果想使用JQuery的方法，需要使用 $(this) 包装
+            alert($(this).text());      // 弹出P节点的文本值内容 
+            $(this).text("Hello World");    // text()有参数是为属性节点设置文本值
+        });
+    $.trim(str) - 去除字符串的前后空格
+    $("tr").find("td:first")
+        查找tr下第一个td子节点
+5 创建节点、插入节点
+    JQuery中的DOM对象
+        DOM - 一种与浏览器，平台，语言无关的接口，使用该接口可以轻松地访问页面中所有标准组件
+        DOM操作分类
+            DOM Core
+                不属于JS 可用来处理任何一种用标记语言编写出来的文档，如XML
+            HTML DOM
+                
+            CSS-DOM
+                主要用于获取和设置style对象的各种属性
+    查找节点
+        查找属性节点 - 通过选择器查找到节点
+        操作属性节点 - 通过 attr() 方法获取各种属性值
+        操作文本节点 - 通过 text() 方法操作
+    创建节点 
+        $(html) - 根据传入的HTML标记字符串创建一个DOM对象，并把这个DOM对象包装成一个JQuery对象
+            不会自动的插入到文档中
+            需要使用完成的闭合标签，使用完整的XHTML格式
+    插入节点
+        append()        向每个匹配的元素的内部结尾处追加内容
+        appendTo()      将每个匹配的元素追加到指定的元素中的内部结尾处
+        prepend()       向每个匹配元素的内部开始处插入内容
+        prependTo()     将每个匹配的元素插入到指定的元素内部的开始处
+        after()         向每个匹配的元素的之后插入节点
+        insertAfter()   将每个匹配的元素插入到指定的元素之后
+        before()        向每个匹配的元素的之前插入内容
+        insertBefore()  将每个匹配的元素插入到指定的元素之前
+    例子
+        // 插入节点 - 子节点
+        $("<li>郑州</li>").appendTo($("#city"));      // 加到结尾处
+        $("#city").append("<li>郑州</li>");
+        $("<li>郑州</li>").prependTo($("#city"));     // 加到开始处
+        $("#city").prepend("<li>郑州</li>");
+        // 插入节点 - 兄弟节点
+        $("<li>insertAfter</li>").insertAfter($("#ra"));
+        $("#ra").after("<li>after</li>");
+        $("<li>insertBefore</li>").insertBefore($("#bj"));
+        $("#bj").before("<li>before</li>");
+6 删除节点
+    remove() - 删除所有匹配的元素，节点包含的子节点同时被删除
+    empty() - 清空节点
 
 
 

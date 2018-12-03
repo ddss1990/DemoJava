@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>子元素过滤选择器</title>
+    <style type="text/css">
+        /*定义一些格式*/
+        div, span, p {
+            width: 140px;
+            height: 140px;
+            margin: 5px;
+            background: #CCCCFF;
+            border: #000000 1px solid;
+            float: left;
+            font-size: 17px;
+            font-family: Verdana;
+        }
+
+        div.mini {
+            width: 55px;
+            height: 55px;
+            background-color: #CCCCFF;
+            font-size: 12px;
+        }
+
+        div.hide {
+            display: none;
+        }
+    </style>
+    <!-- 导入 JQuery库 -->
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 动画
+        $(document).ready(function () {
+            function anmateIt() {
+                $("#mover").slideToggle("slow", anmateIt);
+            }
+
+            anmateIt();
+            // })
+            // $(function(){}) 等同于 window.onload = function () {}
+            // $(function () {
+            // 属性过滤选择器
+            // btn1 - 选取每个class为one的div父元素的第二个子元素
+            $("#btn1").click(function () {
+                $("div.one :nth-child(2)").css("background", "#ff0000");
+            })
+            // btn2 - 选取每个class为one的div父元素下的第一个子元素
+            $("#btn2").click(function () {
+                $("div.one :first-child").css("background-color", "#0000ff");
+            })
+            // btn3 -  选取每个class为one的父元素下的最后一个子元素
+            $("#btn3").click(function () {
+                $("div.one :last-child").css("background", "#00ff00");
+            })
+            // btn4 - 如果class为one的div父元素下有且只有一个子元素，那么选中
+            $("#btn4").click(function () {
+                $("div.one :only-child").css("background", "#eeeeee");
+            })
+            /*
+                        // btn5 - 选取属性值title以'est'结尾的 div 元素
+            $("#btn5").click(function () {
+                $("div[title$='est']").css("background", "#ee44ff");
+            })
+            // btn6 - 选取属性值title含有'es'的 div 元素
+            $("#btn6").click(function () {
+                $("div[title*='es']").css("background", "#44eeff");
+            })
+            // btn7 - 组合选择器，首先选取有属性id的div元素，然后在结果中，选取属性title的值含有'es'的元素
+            $("#btn7").click(function () {
+                $("div[id][title*='es']").css("background", "#ffee44");
+            })
+            // btn8 - 选择索引值小于3的 div 元素
+            $("#btn8").click(function () {
+                $("div:lt(3)").css("background", "#6666aa")
+            })
+            // btn9 - 选择所有标题元素
+            $("#btn9").click(function () {
+                $(":header").css("background", "#66aa66")
+            })
+            // btn10 - 选择当前正在执行动画的元素
+            $("#btn10").click(function () {
+                $("div:animated").css("background", "#aa6666")
+            })*/
+            // reset
+            $("#reset").click(function () {
+                $("div, span").css("background", "#CCCCFF");
+                $("html, body").css("background", "#FFFFFF")
+            })
+        })
+    </script>
+</head>
+<body>
+<input type="button" value="选取每个class为one的div父元素的第二个子元素" id="btn1"/>
+<input type="button" value="选取每个class为one的div父元素下的第一个子元素" id="btn2"/>
+<input type="button" value="选取每个class为one的父元素下的最后一个子元素" id="btn3"/>
+<input type="button" value="如果class为one的div父元素下有且只有一个子元素，那么选中" id="btn4"/>
+<input type="button" value="Reset" id="reset"/>
+<h3>子元素过滤选择器</h3>
+<br><br>
+<div class="one" id="one">
+    id为one, class为one的div
+    <div class="mini">class为mini</div>
+</div>
+<div class="one" id="two" title="test">
+    id为two, class为one, title为test的div
+    <div class="mini" title="other">class为mini,title为other</div>
+    <div class="mini" title="test">class为mini,title为test</div>
+</div>
+<div class="one" id="three">
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini"></div>
+</div>
+<div class="one">
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini">class为mini</div>
+    <div class="mini" title="test">class为mini,title为test</div>
+</div>
+<div style="display:none;" class="none">style的display为'none'的div</div>
+<div class="hide">class为"hide"的div</div>
+<div>包含input的type为'hidden'的div<input type="hidden" size="8"/></div>
+<span id="span">^^span元素^^</span>
+<span id="span1">--span元素--</span>
+<div id="mover">正在执行动画的div元素</div>
+
+</body>
+</html>

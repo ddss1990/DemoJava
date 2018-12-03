@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery exercise 3</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 文档加载完成后触发
+        $(function () {
+            // 添加
+            $("#stu_submit").click(function () {
+                var $name = $("#stu_name");
+                // alert($name)
+                var name = $.trim($name.val());
+                // alert(name);
+                $name.val("");
+                var $age = $("#stu_age");
+                var age = $.trim($age.val());
+                $age.val("");
+                var $email = $("#stu_email");
+                var email = $.trim($email.val());
+                $email.val("");
+
+                // 添加节点
+                // $("#stu_info tbody").append("<")
+                $("<tr></tr>").append("<td>" + name + "</td>").append("<td>" + age + "</td>").append("<td>" + email + "</td>")
+                    .append("<td><a href='deleteStu?id=XXX'>Delete</a></td>").appendTo($("#stu_info tbody"))
+                    .find("a").click(function () {
+                    removeTr(this);
+                    return false;
+                });
+            })
+            // 删除
+            $("#stu_info a").click(function () {
+                removeTr(this);
+            })
+
+            function removeTr(tr) {
+                var $parent = $(tr).parent().parent();
+                var content = $parent.find("td:first").text();
+                var message = "确定要删除 " + content + " 的信息吗?";
+                var flag = confirm(message);
+                // alert(flag);
+                if (flag) {
+                    $parent.remove();
+                }
+                return false;
+            }
+        })
+    </script>
+</head>
+<body>
+<center>
+    <br><br>
+    添加新的学生信息
+    <br><br>
+    name:<input type="text" id="stu_name" name="stuName">&nbsp;&nbsp;
+    age:<input type="text" id="stu_age" name="stuAge">&nbsp;&nbsp;
+    email:<input type="text" id="stu_email" name="stuEmail">
+    <br><br>
+    <input type="submit" value="Submit" id="stu_submit">
+    <br><br>
+    <hr> <!-- hr 是一条横线 -->
+
+    <!-- 信息展示 -->
+    <br><br>
+    <table id="stu_info" border="1" cellpadding="5" cellspacing="0">
+        <tbody>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Email</th>
+            <th>&nbsp;</th>
+        </tr>
+        <tr>
+            <td>Tom</td>
+            <td>18</td>
+            <td>tom@abc.com</td>
+            <td><a href="deleteStu?id=001">Delete</a></td>
+        </tr>
+        <tr>
+            <td>Jerry</td>
+            <td>19</td>
+            <td>jerry@abc.com</td>
+            <td><a href="deleteStu?id=002">Delete</a></td>
+        </tr>
+        <tr>
+            <td>Jimmy</td>
+            <td>22</td>
+            <td>jimmy@abc.com</td>
+            <td><a href="deleteStu?id=003">Delete</a></td>
+        </tr>
+        </tbody>
+    </table>
+</center>
+</body>
+</html>

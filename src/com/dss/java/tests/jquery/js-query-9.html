@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>表单对象过滤选择器</title>
+    <style type="text/css">
+        /*定义一些格式*/
+        div, span, p {
+            width: 140px;
+            height: 140px;
+            margin: 5px;
+            background: #CCCCFF;
+            border: #000000 1px solid;
+            float: left;
+            font-size: 17px;
+            font-family: Verdana;
+        }
+
+        div.mini {
+            width: 55px;
+            height: 55px;
+            background-color: #CCCCFF;
+            font-size: 12px;
+        }
+
+        div.hide {
+            display: none;
+        }
+    </style>
+    <!-- 导入 JQuery库 -->
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 动画
+        $(document).ready(function () {
+            // $(function(){}) 等同于 window.onload = function () {}
+            // $(function () {
+            // 表单对象过滤选择器
+            // btn1 - 操作表单内可用input
+            $("#btn1").click(function () {
+                var val = $("input:enabled").val();
+                alert(val);
+                $(":text:enabled").attr("value", "Hello World");
+                // $("input:enabled").val("Hello world");
+            })
+            // btn2 - 操作表单内不可用input
+            $("#btn2").click(function () {
+                $(":text:disabled").val("Cat eat fish.");
+            })
+            // btn3 -  获取多选框选中的个数
+            $("#btn3").click(function () {
+                var len = $(":checkbox[name='newsletter']:checked").length;
+                alert(len);
+            })
+            // btn4 - 获取多选框中的内容
+            $("#btn4").click(function () {
+                $(":checkbox[name='newsletter']:checked").each(function () {
+                    alert(this.value);
+                })
+            })
+            // btn5 - 获取下拉框中的内容
+            $("#btn5").click(function () {
+                $("select :checked").each(function () {
+                    alert(this.value);
+                })
+            })
+            // reset
+            $("#reset").click(function () {
+                $("div, span").css("background", "#CCCCFF");
+                $("html, body").css("background", "#FFFFFF")
+            })
+        })
+    </script>
+</head>
+<body>
+<h2>表单对象属性过滤选择器</h2>
+<button value="" id="btn1">操作表单内可用input</button>
+<button value="" id="btn2">操作表单内不可用input</button>
+<br><br>
+<button value="" id="btn3">获取多选框选中的个数</button>
+<button value="" id="btn4">获取多选框中的内容</button>
+<br><br>
+<button value="" id="btn5">获取下拉框中的内容</button>
+<br><br>
+<form id="form1">
+    可用元素: <input name="add" value="可用文本框1"/><br>
+    不可用元素: <input name="email" disabled="true" value="不可用文本框"/><br>
+    可用元素: <input name="che" value="可用文本框2"/><br>
+    不可用元素: <input name="name" disabled="true" value="不可用文本框"/><br>
+    <br>
+    多选框: <br>
+    <input type="checkbox" name="newsletter" checked="checked" value="test1"/>test1
+    <input type="checkbox" name="newsletter" value="test2"/>test2
+    <input type="checkbox" name="newsletter" value="test3"/>test3
+    <input type="checkbox" name="newsletter" checked="checked" value="test4"/>test4
+    <input type="checkbox" name="newsletter" value="test5"/>test5
+    <br><br>
+    下拉列表1: <br>
+    <select name="test" multiple="multiple" style="height: 100px">
+        <option>浙江</option>
+        <option selected="selected">辽宁</option>
+        <option>北京</option>
+        <option selected="selected">天津</option>
+        <option>广州</option>
+        <option>湖北</option>
+    </select>
+    <br><br>
+    下拉列表2: <br>
+    <select name="test2">
+        <option>浙江</option>
+        <option>辽宁</option>
+        <option selected="selected">北京</option>
+        <option>天津</option>
+        <option>广州</option>
+        <option>湖北</option>
+    </select>
+
+    <textarea rows="" cols=""></textarea>
+
+</form>
+
+</body>
+</html>

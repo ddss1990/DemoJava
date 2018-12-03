@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery Dom1</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 使用JQuery操作文本节点，属性节点，及查找元素节点
+        $(function () {
+            // 1. 操作文本节点
+            // alert($("#city").text()); // 得到city节点下所有li节点的文本值
+            alert($("#bj").text());
+            $("#bj").text("Beijing");
+            // 2. 操作属性节点
+            alert($(":text[name='username']").attr("value")); // Tom
+            $(":text[name='username']").val("Jerry");
+        })
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+<br><br>
+name:<input type="text" name="username" value="Tom"/>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery Dom3</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 使用JQuery 创建节点，插入节点
+        $(function () {
+            // 点击 submit 按钮时,　检查是否选择 type, 若没有选择给出提示: "请选择类型";
+            //  检查文本框中是否有输入(可以去除前后空格), 若没有输入,则给出提示: "请输入内容";
+            //
+            function showContent(li) {
+                alert($(li).text());
+            }
+
+            $("li").click(function () {
+                showContent(this);
+            })
+            // 点击事件
+            $("#submit").click(function () {
+                var $type = $(":radio[name='type']:checked");
+                if ($type.length) {
+                    var type = $type.val();
+                    // alert(type);
+                    var $content = $("#commit_content");
+                    var content = $content.val();
+                    var content_trim = $.trim(content);
+                    if (content_trim == "") {
+                        alert("请输入内容!");
+                        return false;
+                    }
+                    $("<li>" + content_trim + "</li>").appendTo($("#" + type)).click(function () {
+                        showContent(this);
+                    });
+                } else {
+                    alert("请选择类型")
+                }
+                // alert(len);
+                return false;
+            })
+        })
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+<br>
+<!--action 用于跳转-->
+<form action="js-dom-6.html">
+    <input type="radio" name="type" value="city">城市
+    <input type="radio" name="type" value="game">游戏
+    name:
+    <input type="text" name="inputValue" id="commit_content">
+    <input type="submit" id="submit" value="Submit">
+</form>
+<br>
+<br>
+
+</body>
+</html>
