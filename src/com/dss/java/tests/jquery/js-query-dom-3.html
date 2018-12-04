@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery Dom3</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 使用JQuery 创建节点，插入节点
+        $(function () {
+            // 1 包裹节点
+            // $("li").wrap("<font color='red'></font>")
+            // $("li").wrapAll("<font color='red'></font>")
+            $("#game li").wrapInner("<font color='red'></font>")
+
+            // 2. html()
+            alert($("#city").html());
+            $("#city").html($("#game").html());
+        })
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+gender:
+<input type="radio" name="gender" value="male"/>Male
+<input type="radio" name="gender" value="female"/>Female
+<br><br>
+name:<input type="text" name="username" value="Tom"/>
+
+</body>
+</html>

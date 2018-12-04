@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery exercise4</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 使用JQuery 创建节点，插入节点
+        $(function () {
+            // 点击节点，交换对应位置的节点
+            $("li").click(function () {
+                // alert($(this).text());
+                var typeId = $(this).parent().attr("id");
+                var index = $(this).index();
+                var targetId;
+                if (typeId == "city") {
+                    targetId = "game";
+                    // alert("city");
+                } else if (typeId == "game") {
+                    targetId = "city";
+                    // alert("game");
+                }
+
+                // // alert($targetNode.text())
+                // // 交换节点
+                var $cloneNode = $(this).clone(true);
+                var $targetNode = $("#" + targetId + " :eq(" + index + ")");
+                var $targetClone = $targetNode.clone(true);
+                $cloneNode.replaceAll($targetNode);
+                $targetClone.replaceAll($(this));
+                // $(this).replaceWith($targetNode);
+                // // alert(1);
+                // $targetNode.replaceWith($cloneNode);
+
+            })
+            /*
+                        $ra = $("#ra");
+                        var $clone = $("#bj").clone(true).replaceAll($ra);
+                        // alert($clone.text());
+                        // alert($("#bj").text());
+                        alert($ra.text());
+                        $("#bj").replaceWith($ra);*/
+
+            // $(clone).replaceAll($("#ra")); // ra 替换为 bj
+            // $("#city :first").replaceWith($("#ra"))
+            // $("#ra").replaceAll($("#city li:first"));
+
+            // 互换 bj,ra 互换后，ra节点不再有点击响应(现bj处，点击'红色警戒'无反应)
+            // var $clone = $("#bj").clone(true);
+            // var $ra = $("#ra").replaceWith($clone);
+            // $("#bj").replaceWith($ra);
+
+            // 复制节点
+            /*
+            var $clone = $("#bj").clone();  // 不具备点击事件
+            var $clone1 = $("#bj").clone(true); // 有点击事件的响应
+            $("#bj").clone().attr("id", "bj2"); // 会将原来的id一同复制，就会变成有两个相同id的节点，通过attr()对id进行处理
+            $("#game").append($clone);
+            $("#game").append($clone1);*/
+
+            // 替换节点
+            // $("<li>replaceWith</li>").replaceAll($("#city :last")); // 原节点的点击事件失效
+            //$("#city li:last").replaceWith("<li>replace</li>");
+        })
+    </script>
+</head>
+<body>
+<p>你喜欢哪座城市？</p>
+<ul id="city">
+    <li id="bj" name="beijing">北京</li>
+    <li>上海</li>
+    <li>南京</li>
+    <li>杭州</li>
+</ul>
+
+<br><br>
+<p>你喜欢哪款游戏？</p>
+<ul id="game">
+    <li id="ra" name="Red Alert">红色警戒</li>
+    <li>LOL</li>
+    <li>QQ飞车</li>
+    <li>穿越火线</li>
+</ul>
+<br>
+<!--action 用于跳转-->
+<form action="js-dom-6.html">
+    <input type="radio" name="type" value="city">城市
+    <input type="radio" name="type" value="game">游戏
+    name:
+    <input type="text" name="inputValue" id="commit_content">
+    <input type="submit" id="submit" value="Submit">
+</form>
+<br>
+<br>
+
+</body>
+</html>

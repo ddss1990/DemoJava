@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery exercise5</title>
+    <script type="text/javascript" src="jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        // 使用JQuery 创建节点，插入节点
+        $(function () {
+            // 输入邮箱名和密码的时候，对默认文字进行隐藏
+            // 焦点聚集的函数
+            $(":text[name='login']").focus(function () {
+                if ($(this).val() == this.defaultValue) {
+                    $(this).val("");
+                }
+            }).blur(function () {
+                // 失去焦点
+                var val = $(this).val();
+                var value = $.trim(val);
+                if (value == "") {
+                    $(this).val(this.defaultValue);
+                }
+            })
+            // btn1 - 使单选下拉框'选择3号'被选中
+            $("#btn1").click(function () {
+                // select 被选中的标志是 selected
+                // 多选框和单选框被选中的标志是 checked
+                //alert($("#single_select :checked").val())
+                // $("#single_select :eq(2)").attr("selected", "selected"); // 可行
+                // $("#single_select option:eq(2)").attr("selected", "selected");   // 可行
+                // 可行
+                $("#single_select").val("选择3号");
+                // alert($("#single_select :checked").text())
+                // alert($("#single_select :checked").attr("selected"));
+            })
+            // btn2 - 使多选下拉框'选择2号'和'选择4号'被选中
+            $("#btn2").click(function () {
+                //alert($("#mul_select").val()); //选择1号,选择3号
+                $("#mul_select").val(['选择2号', '选择4号']);
+            })
+            // btn3 - 使多选框的'多选2'和'多选4'被选中
+            $("#btn3").click(function () {
+                $(":checkbox[name='checkbox']").val(["多选2", "多选4"]);
+                //alert($(":checkbox[name='checkbox']").text());  // 空
+            })
+            // btn4 - 使单选 框的'单选2'被选中
+            $("#btn4").click(function () {
+                // alert(4);
+                $(":radio[name='single']").val(["单选2"]);// 可行
+                // $(":radio[name='single']:eq(1)").attr("checked", checked);
+                // alert($(":radio:eq(1)").attr("checked"));  // 能获得单选2的val()值和checked状态，但是设置不了
+            })
+            // btn5 - 打印被选中的值
+            $("#btn5").click(function () {
+
+                // alert("下拉框: " + $("select :checked").text()); // 显示单选和多选下拉框被选中的
+                // alert("单选框: " + $(":radio:checked").val());
+                $(":checkbox[name='checkbox']:checked").each(function () {
+                    //alert(1);
+                    //alert($(this).val())
+                    alert("多选框: " + this.value + " " + this.nextSibling.nodeValue);
+                })
+                // alert($("#single_select").val())  // 显示单选下拉框被选中的
+                // alert($("#mul_select").val())   // 显示多选下拉框被选中的
+                // alert($(":checkbox:checked").val());   // 只显示1个被选中的
+                // alert($(":radio:checked").val());      // 显示被选中的单选框
+                // alert($("#single_select, #mul_select").val());  // 只显示单选下拉框被选中的
+                // alert($("select :checked").text() + "\n checkbox:" + $(":radio:checked").val());    // 显示单选多选下拉框被选中的，并显示单选被选中的
+                // alert($("select :checked").text() + "\n checkbox:" + $(":checkbox:checked, :radio:checked").val()); // 显示单选多选下拉框选中的，并显示多选框被选中的，但只显示一条
+            })
+        });
+    </script>
+</head>
+<body>
+<form>
+</form>
+<input type="text" name="login" value="请输入邮箱地址" id="login_email"/>
+<br>
+<input type="text" name="login" value="请输入邮箱密码" id="login_pwd"/>
+<br>
+<input type="submit" value="登录" id="login"/>
+<!--action 用于跳转-->
+<!--<form action="js-dom-6.html">
+    <input type="radio" name="type" value="city">城市
+    <input type="radio" name="type" value="game">游戏
+    name:
+    <input type="text" name="inputValue" id="commit_content">
+    <input type="submit" id="submit" value="Submit">
+</form>-->
+<br><br><br>
+<button id="btn1">使单选下拉框'选择3号'被选中</button>
+<button id="btn2">使多选下拉框'选择2号'和'选择4号'被选中</button>
+<br>
+<button id="btn3">使多选框的'多选2'和'多选4'被选中</button>
+<button id="btn4">使单选 框的'单选2'被选中</button>
+<br>
+<button id="btn5">打印被选中的值</button>
+<br><br>
+<select id="single_select">
+    <option>选择1号</option>
+    <option>选择2号</option>
+    <option>选择3号</option>
+    <option>选择4号</option>
+</select>
+<select id="mul_select" style="height: 150px;" multiple="multiple">
+    <option selected="selected">选择1号</option>
+    <option>选择2号</option>
+    <option selected="selected">选择3号</option>
+    <option>选择4号</option>
+    <option>选择5号</option>
+</select>
+<br><br>
+<input type="checkbox" name="checkbox" value="多选1"/>多选1^^^
+<input type="checkbox" name="checkbox" value="多选2"/>多选2^^^
+<input type="checkbox" name="checkbox" value="多选3"/>多选3^^^
+<input type="checkbox" name="checkbox" value="多选4"/>多选4^^^
+<br><br>
+<input type="radio" name="single" value="单选1"/>单选1
+<input type="radio" name="single" value="单选2"/>单选2
+<input type="radio" name="single" value="单选3"/>单选3
+</body>
+</html>
