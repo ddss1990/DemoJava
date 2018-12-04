@@ -302,9 +302,86 @@
         返回对象包含了两个属性: top, left
         $().offset().top, $().offset().left
 8 事件处理
-
-
-
+    加载DOM
+        1. window.onload = function() {}
+            执行时机 - 必须等网页中的所有内容加载完毕后(包括图片)才能执行  如果图片比较大，加载速度可能会慢
+            编写个数 - 不能同时编写多个
+            无简化语法
+        2. $(function(){})  // $(document).ready(function(){})
+            执行时机 - 网页中的DOM结构绘制完毕后就执行，可能DOM元素关联的东西并没有加载完
+            编写个数 - 能同时编写多个
+            简写 - $(function(){})
+    事件绑定
+        var flag = $(".content").is(":hidden");     // 判断类content是否是隐藏状态
+        $node.show()      使隐藏的变为显示
+        $node.hide()      使显示的变为隐藏
+        $node.mouserover(function)      移到元素上的事件
+        $node.mouserout(function)       移出元素的事件
+        $body.mousemove(function())     鼠标的移动事件
+        绑定事件的方法
+            1. $().click(function(){})
+            2. $().bind("click", function(){})
+    合成事件
+        hover(function1, function2)     模拟光标悬停事件
+            光标移动到元素上时触发function1,光标移出这个元素时触发function2
+            效果同 mouserover(function) - 移到元素上, mouserout(function) - 移出元素
+        toggle(f1, f2, ...)        模拟鼠标连续单击事件
+            第一次点击触发f1,第二次触发点击触发f2,....
+        toggle()        切换元素的可见状态
+    事件冒泡
+        事件会按照DOM结构像水泡一样不断向上直到顶端
+        <body>
+            <div id="content">
+                外层div元素
+                <span>内层span元素</span>
+                外层div元素
+            </div>
+        </body>
+        同时给 body, div, span 添加点击事件，点击span的时候，会同时触发这三个事件。如果在span的点击事件里加上'return false'，就会有效的阻止触发 body 和 div 的点击事件
+    事件对象的属性
+        事件对象 - 当触发事件时，事件对象就被创建了，在程序中使用事件只需要为函数添加一个参数 
+        $("body").mousemove(function(event){    // event 只是参数名，可以随便写
+                event.pageX
+                event.pageY
+        })
+            事件 - 当鼠标移动时，就会触发 mousemove 事件
+            事件对象 - event
+            事件对象的属性 - pageX, pageY
+    移除事件
+        $().unbind("click")         移除点击事件
+        $().unbind();               移除所有事件
+        $().one("click", function)  为元素绑定点击事件处理函数，只能触发一次，触发后事件被删除
+9 动画
+    hide(), show()
+        会同时增大或减少内容的高度，宽度和不透明度
+        hide()  功能同  css("display", "none")
+        无参 - 立即执行方法，不会有动画效果
+        有参 
+            1个 - 动画时长 例:1000
+    fadeIn(),fadeOut()      只改变元素的透明度
+        fadeOut - 在一定的时间降低元素的不透明度，知道完全消失
+        fadeIn - 相反
+    slideDown(), slideUp()  只改变元素的高度
+        如果display属性为none,调用slideDown时，此元素会由上至下延伸显示；slideUp相反，由下至上缩短隐藏
+    toggle()        切换元素的可见状态
+        如果是可见的，切换为隐藏；隐藏的则切换为可见的
+    slideToggle()   通过高度变化来切换匹配元素的可见性
+        效果同toggle(),只是此方法改变的是高度
+    fadeToggle()    通过透明度来切换元素的可见性
+    fadeTo()        不透明度以渐进的方式调整到指定的值[0-1]
+        p1 - "slow", "fast"
+        p2 - [0-1]
+10 练习
+    js-query-ex-6.html
+    知识点 
+        var $hideCategory = $("li:gt(5):lt(7)");        // lt(7)是在gt(5)的基础上进行比较的，是先从所有的li中找到index大于5点，然后从这些大于5点节点中找到小于7点
+            // 不适应用作大于小于操作
+        var $hideCategory = $("li:gt(5):not(:last)");   // 大于5点节点，并且排除掉最后一个
+        $("li:contains('佳能'), li:contains('尼康'), li:contains('奥林巴斯')").addClass("promoted");
+            // 首先是多条选择器合并在一起的，得到符合条件的多个节点
+            // 之后是为这些节点设置高亮显示，通过添加class做到的
+        $(".showmore >a >span").css("background", "url(img/up.gif) no-repeat 0 0");
+            // 更改背景图片 - 通过修改 background 属性来完成
 格式
 <style type="text/css">
     /* 定义格式 */  /* 一定要注意在sytle里的注释是使用 /* */ */
@@ -328,6 +405,7 @@
         display: none;
     }
 </style>
+<link href="css/style.css" type="text/css" rel="stylesheet">
 <script type="text/javascript">
     function anmateIt() {
         $("#mover").slideToggle("slow", anmateIt);

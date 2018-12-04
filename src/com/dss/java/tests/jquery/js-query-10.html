@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绑定事件</title>
+    <link href="css/style.css" type="text/css" rel="stylesheet">
+    <script type="text/javascript" src="scripts/jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            function showNode($node) {
+                $node.show();
+            }
+
+            function hideNode($node) {
+                $node.hide();
+            }
+
+            // 点击标题，如果没显示，就对内容进行显示；如果已显示就对其隐藏
+            /*$(".head").click(function () {
+                // alert(1);
+                var flag = $(".content").is(":hidden");
+                if (flag) {
+                    $(".content").show();
+                } else {
+                    $(".content").hide();
+                }
+            })*/
+            /*// 绑定点击事件的第二种方法
+            $(".head").bind("click", function () {
+                var flag = $(".content").is(":hidden");
+                if (flag) showNode($(".content"));
+                else hideNode($(".content"));
+            })*/
+
+            // 合成事件
+            // 鼠标移到元素上显示，移出去隐藏
+            /*$(".head").mouseover(function () {
+                showNode($(".content"));
+            }).mouseout(function () {
+                hideNode($(".content"));
+            });*/
+            // $(".head").hover(showNode($(".content")), hideNode($(".content")));
+            $(".head").hover(function () {
+                // $(".content").show();
+                showNode($(".content"));
+            }, function () {
+                $(".content").hide();
+            })
+        })
+    </script>
+
+</head>
+<body>
+
+<div id="panel">
+    <h5 class="head">什么是jQuery?</h5>
+    <div class="content" style="display: none;">
+        jQuery是继Prototype之后又一个优秀的JavaScript库，它是一个由 John Resig
+        创建于2006年1月的开源项目。jQuery凭借简洁的语法和跨平台的兼容性，极大地简化了JavaScript开发人员遍历HTML文档、操作DOM、处理事件、执行动画和开发Ajax。它独特而又优雅的代码风格改变了JavaScript程序员的设计思路和编写程序的方式。
+    </div>
+</div>
+
+</body>
+</html>
