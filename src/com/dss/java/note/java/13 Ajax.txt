@@ -1,0 +1,74 @@
+/**
+* Ajax
+* 视频时间 : 2013/12/16
+* 学习时间 : 2018/12/5
+*/
+1 Ajax - Asynchronous JavaScript and XML
+    允许浏览器与服务器通信而无需刷新当前页面的技术
+    不用刷新整个页面就可与服务器通讯的方法
+        Flash
+        Java applet
+        框架 - 如果使用一组框架构造了一个网页，可以只更细其中一个框架，而不用更新整个页面
+        隐藏的iframe
+        XMLHttpRequest
+            是对JS的一个扩展，可使网页与服务器进行通信
+            是创建Ajax应用的最佳选择
+            实际上通常把Ajax当作XMLHttpRequest对象的代名词
+    Ajax不是一项技术，是几种技术
+        服务端语言 - 需要具备发送特定消息的能力，Ajax与服务端语言无关
+        XML - 描述数据的格式
+            Ajax需要某种格式化的格式在服务器和客户端之间传递消息，XML是其中一种选择
+        XHTML/CSS - 标准化呈现
+        DOM - 实现动态展示和交互
+        XMLHttpRequest - 异步数据读取
+        JS - 绑定和处理所有数据
+2 XMLHttpRequest
+    创建对象
+        var xml = new XMLHttpRequest();
+    方法
+        open(method, url)   建立对服务器的调用
+            method - 请求的方式
+            url - 请求的地址 一般会在请求会边加上一个时间戳，为了达到禁用缓存的目睹
+                var url = "" + "?time=" + new Date;
+        send(content)       发送请求,用于发送POST请求时候的数据
+        setRequestHeader(header, value)     Post请求的时候使用
+    属性
+        onreadystatechange  每个状态的改变都会触发此事件处理器
+            本事件由服务器触发，而不是用户
+        readyState          请求状态
+            0-未初始化, 1-正在加载, 2-已经加载, 3-交互中, 4-完成
+        status              服务器的HTTP状态码(200-OK, 404-Not Found)
+        responseText        服务器返回的一个文本(字符串)
+        responseXML         服务器返回的一个XML属性
+    一个简单的例子
+        DOM方式
+            window.onload = function () {
+                var request = new XMLHttpRequest();     // 创建请求对象
+                var method = "GET";                     // 请求方式
+                var url = "";                           // 请求地址
+                request.open(method, url);              // 和服务器建立连接关系
+                request.send(null);                     // 发送内容，如果不用发送的话就写null
+                request.onreadystatechange = function() {       // 监听状态变化
+                    if (request.readyState == 4) {      // 请求完成
+                        if(request.status == 200 || request.status == 302) {        // 请求成功
+                            alert(request.responseText);        // 获得响应结果
+                        }
+                    }
+                }
+            }
+            // POST请求
+            var method = "POST";                        // 设置请求方式为POST
+            request.setRequestHeader("ContentType", "application/x-www-form-url-urlencoded");   // 设置请求头
+            request.send("name='tom'");                 // 发送请求数据
+
+
+
+
+
+
+
+
+
+
+
+https://blog.csdn.net/strivenoend/article/details/78620722

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery exercise 7</title>
+    <style type="text/css">
+        .center {
+            position: relative;
+            text-align: center;
+            padding-left: 20px;
+            padding-top: 100px;
+        }
+
+        img.mini {
+            margin-left: 20px;
+            width: 180px;
+            height: 103px;
+        }
+
+        img.big {
+            position: relative;
+            display: none;
+            height: 309px;
+            width: 540px;
+        }
+
+        div.position {
+            cursor: default;
+            position: relative;
+            padding: 0 20px 30px 0;
+        }
+    </style>
+    <script type="text/javascript" src="scripts/jquery-1.7.2.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("img").mousemove(function (e) {
+                // 计算偏移量
+                var offset = $(this).offset(); // top是该节点最上方到HTML最上方的位置
+
+                // left 是左边到最左边的位置
+                // $(":text").val("left:" + offset.left + "\t\n top:" + offset.top + "  bottom:" + offset.bottom);
+                // 图片底端到HTML上端的距离
+                var height = offset.top + $(this).attr("height");
+                var h = height - e.pageY;
+
+
+                $("#big_pic").show();
+                var src = $(this).attr("src");
+                $("#big_pic").animate({
+                    left: e.pageX,
+                    top: h
+                }, 1);
+                $("#big_pic").attr("src", src);
+            }).mouseout(function () {
+                $("#big_pic").hide();
+            });
+        })
+    </script>
+</head>
+<body>
+<input type="text" disabled="disabled" multiple="multiple">
+<div class="center">
+    <img class="mini" src="img/20181121092830.png"/>
+    <img class="mini" src="img/20181123165818.png"/>
+    <img class="mini" src="img/20181123165839.png"/>
+    <img class="mini" src="img/20181123165850.png"/>
+</div>
+<div class="position" id="bigPicDiv">
+    <img class="big" id="big_pic"/>
+</div>
+</body>
+</html>
