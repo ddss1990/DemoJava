@@ -23,25 +23,25 @@
         XMLHttpRequest - 异步数据读取
         JS - 绑定和处理所有数据
 2 XMLHttpRequest
-    创建对象
-        var xml = new XMLHttpRequest();
-    方法
-        open(method, url)   建立对服务器的调用
-            method - 请求的方式
-            url - 请求的地址 一般会在请求会边加上一个时间戳，为了达到禁用缓存的目睹
-                var url = "" + "?time=" + new Date;
-        send(content)       发送请求,用于发送POST请求时候的数据
-        setRequestHeader(header, value)     Post请求的时候使用
-    属性
-        onreadystatechange  每个状态的改变都会触发此事件处理器
-            本事件由服务器触发，而不是用户
-        readyState          请求状态
-            0-未初始化, 1-正在加载, 2-已经加载, 3-交互中, 4-完成
-        status              服务器的HTTP状态码(200-OK, 404-Not Found)
-        responseText        服务器返回的一个文本(字符串)
-        responseXML         服务器返回的一个XML属性
-    一个简单的例子
-        DOM方式
+    DOM方式
+        创建对象
+            var xml = new XMLHttpRequest();
+        方法
+            open(method, url)   建立对服务器的调用
+                method - 请求的方式
+                url - 请求的地址 一般会在请求会边加上一个时间戳，为了达到禁用缓存的目睹
+                    var url = "" + "?time=" + new Date;
+            send(content)       发送请求,用于发送POST请求时候的数据
+            setRequestHeader(header, value)     Post请求的时候使用
+        属性
+            onreadystatechange  每个状态的改变都会触发此事件处理器
+                本事件由服务器触发，而不是用户
+            readyState          请求状态
+                0-未初始化, 1-正在加载, 2-已经加载, 3-交互中, 4-完成
+            status              服务器的HTTP状态码(200-OK, 404-Not Found)
+            responseText        服务器返回的一个文本(字符串)
+            responseXML         服务器返回的一个XML属性
+        例子
             window.onload = function () {
                 var request = new XMLHttpRequest();     // 创建请求对象
                 var method = "GET";                     // 请求方式
@@ -60,7 +60,130 @@
             var method = "POST";                        // 设置请求方式为POST
             request.setRequestHeader("ContentType", "application/x-www-form-url-urlencoded");   // 设置请求头
             request.send("name='tom'");                 // 发送请求数据
+    JQuery
+        概述
+            JQuery对Ajax操作进行了封装，封装了3层
+            最底层 - $.ajax()
+            第二层 - load(), $.get(), $.post()
+            第三层 - $.getScript(), $.getJSON()
+        核心方法
+            load(url, [data], [callback])       最简单和常用的方法
+                url - 连接
+                data - 发送到服务器的数据,JSON格式
+                callback - 回调函数
+                能载入远程的HTML代码并插入到DOM中
+                细节
+                    1. 如果想从远程HTML代码中选出所需要的内容，可通过URL参数指定选择符  'url selector'
+                        selector 用法同JQuery中的用法。 如 "url h2" - 只保留结果中的h2部分
+                        // 请求的结果仍然是全部，是在请求的结果上进行的选择器过滤
+                    2. 如果没有data参数，使用的是GET方式请求；如果有data参数，使用的是POST请求方式
+                    3. 回调函数用于处置在加载完成后进行的操作，该函数有3个参数
+                        data - 代表请求返回的内容
+                        textStatus - 代表请求状态
+                        XMLHttpRequest - 请求对象
+                总结
+                    1. 所有的HTML节点都能使用load方法来加载Ajax，将结果直接插入到HTML节点中
+            $.get(url, [data], [callback], [type]
+                type - 服务器返回内容的格式，包括 xml, html, script, json, text 和 _default
+                callback - 回调函数，响应结束时触发。 只有两个参数
+                    data - 返回的内容
+                    textStatus - 请求状态，值可为: success, error, notmodify, timeout
+        例子
+            $(function(){
+                // 一个最简单的例子
+                var data = {"time":new Date()};
+                $("#content").load(url, data);        // 加载url链接中的内容到content中 content是个div
+                
+                // $.get()例子
+                $.get(url, data, function(response, textStatus){
+                    var name = $(response).find("name").text();
+                    var website = $(response).find("website").text();
+                    var email = $(response).find("email").text();
+                });
+                
+                // 请求JSON格式的数据
+                $.get(url, data, function(response, textStatus){
+                    var name = response.person.name;    // 如果在后边指定type为'JSON',则返回的就是JSON对象
+                }, "JSON");
+                $.getJSON(url, data, function(response, textStatus)(){
+                    var name = response.person.name;    // 返回的response直接就是一个JSON对象
+                });
+            })
+3 数据格式
+    接受服务器响应的数据的格式
+    XML
+        1. 获得响应结果
+            var result = request.responseXML;
+        2. 解析XML
+            XML格式
+                <?xml version="1.0" encoding="utf-8" ?>
+                <details>
+                    <name>Andy Budd</name>
+                    <website>http://andybudd.com/</website>
+                    <email>andy@clearleft.com</email>
+                </details>
+            解析后的格式
+                <h2><a href="mailto:andy@clearleft.com">Andy Budd</a></h2>
+                <a href="http://andybudd.com/">http://andybudd.com</a>
+            a. 首先从XML中解析出数据
+                var name = result.getElementsByTagName("name")[0].firstChild.nodeValue;
+                var website = result.getElementsByTagName("website")[0].firstChild.nodeValue;
+                var email = result.getElementsByTagName("email")[0].firstChild.nodeValue;
+            b. 利用解析出的数据，构造成节点
+                var nodeH2 = document.createElement("h2");
+                var nodeA1 = document.createElement("a");
+                nodeA1.href = "mailto:" + email;
+                nodeA1.appendChild(document.createTextNode(name));
+                nodeH2.appendChild(nodeA1)
 
+                var nodeA2 = document.createElement("a");
+                nodeA2.href = website;
+                nodeA2.appendChild(document.createTextNode(email));
+
+                // 添加节点前先清空
+                detailNode.innerHTML = "";
+                detailNode.appendChild(nodeH2);
+                detailNode.appendChild(nodeA2);
+        缺点
+            首先要确保来自服务器的文档含有正确的首部信息，如果文档类型不正确，得到的结果为空
+            如果XML文档过长，解析起来比较复杂
+        优点
+            XML是通用的数据格式
+            不必把数据强加到已定义好的格式中，而是为数据自定义合适的标记
+            使用DOM可以操作整个文档
+    JSON
+        JSON是JS的原生格式，以为着在JS中处理JSON不需要特殊的AIP或工具包
+        比XML更轻巧
+        JSON串
+            var json = {"name":"tom", "age":18, address:{"city":Shanghai, "district":"BaoShan"}
+                    "speak":function(){  alert("Hello world");   }}
+                // 可存储 字符串、数字、布尔值 以及 函数
+            var name = json.name;
+            var address = json.address;
+            json.speak;
+        解析JSON
+            存储在 request.responseText 中
+            var jsonText = request.responseText;        // 这里得到的只是字符串，还需要转成对象
+            var json = eval("(" + jsonText + ")");      // 将JSON字符串转为JSON对象
+        eval(str)
+            会将str转为本地JS代码，进而执行
+        优点
+            与XML相似，但是更灵巧
+            不需要从服务器端发送含有特定内容类型的首部信息
+        缺点
+            语法过于严谨
+            代码不易读
+            eval 函数存在风险
+    HTML
+        HTML由一些普通文本组成，文本储存在 request.responseText 中，可以直接将其插入到页面中，使用 innertHTML 属性
+        node.innertHTML = request.responseText;
+        优点
+            从服务端发送的HTML代码不需要用JS解析
+            HTML的可读性好
+            HTML代码块与innertHTML属性搭配，效率高
+        缺点
+            不适合更新一个文档的多个部分
+            innertHTML 不是DOM操作
 
 
 
