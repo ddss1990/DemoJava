@@ -6,6 +6,8 @@
 */
 0 Demo
     <script type="text/javascript" src="jquery.js"></script> // 导入库 库放在同级目录下，放在lib目录下，访问不到
+    // 使用绝对路径导入库
+    <script type="text/javascript" src="${pageContext.request.contextPath}/scripts/jquery-1.7.2.js"></script>
     <script type="text/javascript">
         // 全选/全不选
         // $(function(){})  相当于 window.onload 代码写在{}里
