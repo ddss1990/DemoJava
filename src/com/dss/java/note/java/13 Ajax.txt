@@ -233,6 +233,45 @@
     可执行成功的例子
         "validateUserName" - /ajax/validateUserName
         ${pageContext.request.contextPath}/validateUserName - /validateUserName
+5 典型用例
+    加入购物车
+        // 通过请求对象获得购物车对象
+        HttpSession session = req.getSession();
+        ShoppingCart shoppingCart = (ShoppingCart) session.getAttribute("sc");
+        if (shoppingCart == null) {
+            shoppingCart = ShoppingCart.getInstance();
+            session.setAttribute("sc", shoppingCart);
+        }
+        从服务端返回的JSON字符串中的单引号不行，必须是双引号才可以
+            StringBuilder result = new StringBuilder();
+            result.append("{")
+                    .append("\"bookName\":\"")
+                    .append(id)
+                    .append("\",\"bookCount\":")
+                    .append(count)
+                    .append(",\"totalMoney\":")
+                    .append(countPrice)
+                    .append("}");
+        Web端
+            var isHasCart = "${sessionScope.sc == null}";
+            if (isHasCart == "true") {
+                $("#cartInfo").hide();
+            } else {
+                $("#cartInfo").show();
+                $("#bookName").text("${sessionScope.sc.bookName}");
+                $("#bookCount").text("${sessionScope.sc.bookCount);
+                $("#totalMoney").text("${sessionScope.sc.totalMoney}");
+            }
+        Servlet端
+            HttpSession session = req.getSession();
+            ShoppingCart shoppingCart = (ShoppingCart) session.getAttribute("sc");
+            if (shoppingCart == null) {
+                shoppingCart = ShoppingCart.getInstance();
+                session.setAttribute("sc", shoppingCart);
+            }
+        Note
+            ShoppingCart中可以没有 bookName, bookCount, totalMoney 这三个属性，但是必须有 getBookName, getBookCount, getTotalMoney 这三个方法
+            此功能的作用类似于购物车缓存，打开一个新的界面，会显示你保存的购物车信息
 
 
 

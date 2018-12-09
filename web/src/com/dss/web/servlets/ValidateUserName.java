@@ -1,4 +1,4 @@
-package com.dss.server;
+package com.dss.web.servlets;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

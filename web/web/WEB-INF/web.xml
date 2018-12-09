@@ -5,10 +5,19 @@
          version="4.0">
     <servlet>
         <servlet-name>validateUserName</servlet-name>
-        <servlet-class>com.dss.server.ValidateUserName</servlet-class>
+        <servlet-class>com.dss.web.servlets.ValidateUserName</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>validateUserName</servlet-name>
         <url-pattern>/ajax/validateUserName</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>cart</servlet-name>
+        <servlet-class>com.dss.web.servlets.ShoppingCartServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>cart</servlet-name>
+        <url-pattern>/ajax/addToCart</url-pattern>
     </servlet-mapping>
 </web-app>
