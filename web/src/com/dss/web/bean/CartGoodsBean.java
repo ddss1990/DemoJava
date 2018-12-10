@@ -1,5 +1,7 @@
 package com.dss.web.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +42,7 @@ public class CartGoodsBean {
         this.id = id;
     }
 
+    @JsonIgnore
     public GoodsBean getGoods() {
         return goods;
     }

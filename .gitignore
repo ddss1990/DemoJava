@@ -13,3 +13,4 @@ bin/
 c3p0-config.xml.bak
 .gitignore
 #Web/
+web/web/WEB-INF/classes/

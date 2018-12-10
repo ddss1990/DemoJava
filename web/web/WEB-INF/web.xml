@@ -20,4 +20,13 @@
         <servlet-name>cart</servlet-name>
         <url-pattern>/ajax/addToCart</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>employeeServlet</servlet-name>
+        <servlet-class>com.dss.web.servlets.EmployeeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>employeeServlet</servlet-name>
+        <url-pattern>/ajax/employeeServlet</url-pattern>
+    </servlet-mapping>
 </web-app>

@@ -15,12 +15,14 @@
         // 购物车里数量的变化
         $(function () {
             //
-            var isHasCart = "${sessionScope.sc == null}"
-            // alert(isHasCart)
-            if (isHasCart == "true") {
+            var isHasCart = ${sessionScope.sc == null};
+            alert(isHasCart)
+            if (isHasCart) {
+                alert(isHasCart);
                 $("#cartInfo").hide()
             } else {
-                $("#cartInfo").show()
+                $("#cartInfo").show();
+                alert(${sessionScope.sc});
                 $("#bookName").text("${sessionScope.sc.bookName}")
                 $("#bookCount").text("${sessionScope.sc.bookCount}")
                 $("#totalMoney").text("${sessionScope.sc.totalMoney}")

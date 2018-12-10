@@ -90,11 +90,11 @@
                     textStatus - 请求状态，值可为: success, error, notmodify, timeout
         例子
             $(function(){
-                // 一个最简单的例子
+                // 一个最简单的例子 - html
                 var data = {"time":new Date()};
                 $("#content").load(url, data);        // 加载url链接中的内容到content中 content是个div
                 
-                // $.get()例子
+                // $.get()例子 - xml
                 $.get(url, data, function(response, textStatus){
                     var name = $(response).find("name").text();
                     var website = $(response).find("website").text();
@@ -283,6 +283,61 @@
     Jackson 使用 getter 方法来定位JSON对象的属性
     可通过加注解的方式来忽略掉该 getter 定义的属性
         @JsonIgnore
+    还可以将集合转为JSON字符串
+        String json = mapper.writeValueAsString(List<Object>);
+    Note.
+        1. Jackson 根据 getter 方法来定位JSON对象的属性，而不是字段
+        2. 可以在类的 getter 方法上加注解 @JsonIgnore ,在转为JSON对象是忽略该属性
+7 BlockUI
+    在子Module中，需要将使用的库复制到子Module自己的lib文件夹下，再进行导入库
+    基本用法
+        $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI)
+    使用自定义的控件
+        $(document).ajaxStart(function(){
+            $.blockUI({
+                message: $('#ID'),
+                css:{
+                    top:($(window).height() - 400) / 2 + 'px',
+                    left:($(window).width() - 400) / 2 + 'px',
+                    border:'none',          // 去除边框
+                    backgroundColor:'#FFFFFF',      // 修改背景色
+                    width:'400px'
+                },
+                overlayCSS:{
+                    backgroundColor:'#FFFFFF'           // 出去BlockUI之外的背景色
+                }
+            })
+    }).ajaxStop($.unblockUI)
+8 三级联动 - 详细看 ajax-7.jsp
+    首页 - 一上来直接向服务器发出请求，servlet - employeeServlet, 参数: method=listLocations
+        <%
+            response.sendRedirect("employeeServlet?method=listLocations");
+        %>
+    employeeServlet - 根据传来的参数 method, 通过发射获得方法，然后执行方法
+        String methodName = request.getParameter("method");
+        Method method = getClass().getDeclaredMethod(methodName, HttpServletRequest.class, HttpServletResponse.class);
+        method.invoke(this, request, response);
+        
+        // 此方法对应于请求中参数相对应的方法，去查询数据库，获得所有的城市信息
+        listLocations(HttpServletRequest request, HttpServletResponse response)
+            String sql = "select location_id locationId,city from locations;";
+            BaseDao dao = new BaseDao();
+            List<Location> locations = dao.getForList(sql, Location.class);
+            // 将得到的城市集合放到request中，作为参数，这样在页面中可以调用得到
+            request.setAttribute("locations", locations);
+            // 之后让界面执行跳转，跳转到 /ajax/ajax-7.jsp,但是这里一般用 /WEB-INF/pages/ajax-7.jsp ，这样做是为了保证安全性，一般的用户访问不到这里
+            request.getRequestDispatcher("/ajax/ajax-7.jsp").forward(request, response);
+    ajax-7.jsp
+        // 需要先导入库 - jstl
+        <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+        
+        // 界面显示
+        City:<select id="city">
+            <option>请选择...</option>
+            <c:forEach items="${locations}" var="location">     // 这里是获得 locations 这个变量，赋值给 location
+                <option value="${location.locationId}">${location.city}</option>    // 遍历每一个元素，填充<option>
+            </c:forEach>
+        </select>
 
 
 

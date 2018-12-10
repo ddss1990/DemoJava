@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-@WebServlet(name = "/validateUserName")
 public class ValidateUserName extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<String> usernames = Arrays.asList("aaa", "bbb", "ccc");

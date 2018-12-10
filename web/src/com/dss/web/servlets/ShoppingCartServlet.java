@@ -1,6 +1,7 @@
 package com.dss.web.servlets;
 
 import com.dss.web.ShoppingCart;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -39,7 +40,7 @@ public class ShoppingCartServlet extends HttpServlet {
         int count = shoppingCart.getBookCount();
         double countPrice = shoppingCart.getTotalMoney();
         // 准备JSON字符串，进行返回 {"bookName":id, "bookCount":count, "totalMoney":countPrice}
-        StringBuilder result = new StringBuilder();
+        /*StringBuilder result = new StringBuilder();
         result.append("{")
                 .append("\"bookName\":\"")
                 .append(id)
@@ -47,7 +48,9 @@ public class ShoppingCartServlet extends HttpServlet {
                 .append(count)
                 .append(",\"totalMoney\":")
                 .append(countPrice)
-                .append("}");
+                .append("}");*/
+        ObjectMapper mapper = new ObjectMapper();
+        String result = mapper.writeValueAsString(shoppingCart);
         resp.setContentType("text/javascript");
         resp.getWriter().print(result);
         log(count + " - " + countPrice);
