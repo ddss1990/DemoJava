@@ -272,6 +272,17 @@
         Note
             ShoppingCart中可以没有 bookName, bookCount, totalMoney 这三个属性，但是必须有 getBookName, getBookCount, getTotalMoney 这三个方法
             此功能的作用类似于购物车缓存，打开一个新的界面，会显示你保存的购物车信息
+6 Jackson
+    导包 使用2.3以下的包
+        jackson-annotations
+        jackson-core
+        jackson-databind
+    将对象封装成一个JSON字符串
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(Object);
+    Jackson 使用 getter 方法来定位JSON对象的属性
+    可通过加注解的方式来忽略掉该 getter 定义的属性
+        @JsonIgnore
 
 
 

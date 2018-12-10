@@ -32,5 +32,6 @@
         <jarDirectory url="file://$MODULE_DIR$/web/WEB-INF/lib" recursive="false" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="com.fasterxml.jackson.core:jackson-databind:2.2.4" level="project" />
   </component>
 </module>
